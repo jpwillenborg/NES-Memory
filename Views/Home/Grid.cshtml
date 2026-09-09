@@ -5,21 +5,33 @@
     ViewData["Title"] = "NES Game Memory Comparison";
 }
 
-<!-- Loads the Poppins font family weights natively from Google Fonts -->
 <link rel="preconnect" href="https://googleapis.com">
 <link rel="preconnect" href="https://gstatic.com" crossorigin>
 <link href="https://googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-    /* MASTER THEME CONTROL MATRIX: Edit color codes once in this block to change them everywhere */
+    /* MASTER THEME CONTROL MATRIX: Edit color codes once here to update the entire application */
     :root {
-        --color-theme-a: #E31B23;       /* GAME A: Clear Crimson Red */
-        --color-theme-b: #8B0000;       /* GAME B: Deep Maroon */
+        --color-theme-a: #e60f00;       /* GAME A: Clear Crimson Red */
+        --color-theme-b: #ff574b;       /* GAME B: Deep Maroon */
         --color-readout: #FFC107;       /* READOUTS: System Amber Yellow */
-        --color-panel-bg: #2b3035;      /* PANELS: Lighter Gray Card Background */
-        --color-page-bg: #1a1d20;       /* PAGE CANVAS: Main Background Canvas */
-        --color-scrollbar: #555a60;     /* SCROLLBAR: Independent list scrollbar thumb */
-        --color-reset-btn: #495057;     /* RESET BUTTON: Independent style color parameter */
+        --color-panel-bg: #2b3035;      /* PANELS: Standard Card Gray */
+        --color-page-bg: #1a1d20;       /* PAGE CANVAS: Main Page Background */
+        --color-scrollbar: #555a60;     /* SCROLLBAR: Thumb Color */
+        --color-reset-btn: #495057;     /* RESET BUTTON: Standard Background */
+        --color-panel-active-bg: #4e545c; /* ACTIVE GAME ROW: Selected List Card Gray */
+        
+        /* 1. CARTRIDGE LOGIC STATUS BADGE VARIABLES */
+        --color-badge-idle-bg: #212529;   
+        --color-badge-idle-text: #6c757d; 
+        --color-badge-active-bg: #c5c9cc; 
+        --color-badge-active-text: #1a1d20; 
+
+        /* 2. FIXED: ADDED SEPARATE CHANNELS FOR FILE SIZE PILLS (IDLE & ACTIVE) */
+        --color-size-badge-idle-bg: #212529;
+        --color-size-badge-idle-text: #adb5bd;
+        --color-size-badge-active-bg: #c5c9cc;   /* Brand new variable: Size background color when active */
+        --color-size-badge-active-text: #1a1d20; /* Brand new variable: Size text color when active */
     }
 
     body {
@@ -28,7 +40,7 @@
         color: #dee2e6;
     }
 
-    body, :not(.font-monospace):not(small):not(.slot-indicator):not(.badge) {
+    body, :not(.font-monospace):not(small):not(.slot-indicator):not(.badge), .form-label, .btn, .form-select {
         font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
     }
 
@@ -42,7 +54,6 @@
     }
 
     #payload-pool-wrapper {
-        /* FIXED: Lowered max-height from 888px to 886px to perfectly trim the baseline footprint */
         max-height: 886px; 
         overflow-y: auto;
         padding-right: 4px; 
@@ -72,6 +83,12 @@
         transition: background-color 0.2s ease, box-shadow 0.2s ease;
     }
 
+    /* Assign initial root values onto layout items safely */
+    .slot-indicator {
+        background-color: var(--color-badge-idle-bg) !important;
+        color: var(--color-badge-idle-text) !important;
+    }
+
     .memory-cell.slot-a-color { background-color: var(--color-theme-a) !important; }
     .memory-cell.slot-b-color { background-color: var(--color-theme-b) !important; }
 
@@ -84,16 +101,25 @@
 
 
 
+
+
+
     
     
     
     
-        .card, .list-group-item.game-select-btn, .bg-body-tertiary {
+        /* Enforces the baseline background color across global panel elements */
+    .card, .list-group-item.game-select-btn, .bg-body-tertiary {
         background-color: var(--color-panel-bg) !important;
         border-top: none !important;
         border-right: none !important;
         border-bottom: none !important;
         border-left: none; 
+    }
+    
+    /* FIXED: High-priority selected utility rule allows the active row item to bypass the base card block background */
+    .list-group-item.game-select-btn[style*="background-color"] {
+        background-color: var(--color-panel-active-bg) !important;
     }
     
     .badge.bg-black {
@@ -108,6 +134,7 @@
         transform: translateX(4px);
     }
     
+    /* MASTER HIGHLIGHT EDGES: Safely applies the red or maroon left stripe on selection */
     .border-slot-a { border-left: 6px solid var(--color-theme-a) !important; }
     .border-slot-b { border-left: 6px solid var(--color-theme-b) !important; }
     
@@ -162,16 +189,13 @@
 
 
 
+
     <div class="container-fluid my-4 px-md-5">
     <div class="text-center mb-4">
         <h1 class="display-5 fw-bold text-light fs-2 fs-md-1 mb-4">NES System Bus & Memory Allocation Matrix</h1>
-        
-        <!-- FIXED: Adjusted font-size inline parameter up to a balanced 1.05rem -->
         <p class="text-muted mb-4" style="max-width: 900px; margin-right: auto; margin-left: auto; font-size: 1.05rem; line-height: 1.6;">
             Standard NES hardware was originally restricted to a small 64KB address space boundary - until custom Memory Management Controllers (MMCs) or Mappers were introduced. This tool helps visualize how mappers expanded the boundaries to house larger game maps and complex audio.
         </p>
-        
-        <!-- FIXED: Applied the same 1.05rem balance to the second paragraph to keep text blocks matching -->
         <p class="text-muted mb-5" style="max-width: 900px; margin-right: auto; margin-left: auto; font-size: 1.05rem; line-height: 1.6;">
             Select two games from the list to see how 
             <span style="color: var(--color-theme-a); font-weight: bold;">CARTRIDGE A</span> and 
@@ -226,11 +250,12 @@
                                 <div class="flex-grow-1 overflow-hidden">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <h6 class="mb-0 fw-bold item-title text-truncate">@item.IgdbData.Name</h6>
-                                        <span class="badge bg-secondary opacity-75 ms-1">@item.SizeInKb K</span>
+                                        <!-- FIXED: Standardized to use your initial idle variable configuration properties and tracking class -->
+                                        <span class="badge size-badge-pill" style="background-color: var(--color-size-badge-idle-bg) !important; color: var(--color-size-badge-idle-text) !important;">@item.SizeInKb K</span>
                                     </div>
                                     <div class="d-flex justify-content-between align-items-center mt-2">
                                         <small class="text-muted text-truncate small">@item.MapperChip | @item.ReleaseYear</small>
-                                        <span class="slot-indicator badge bg-dark text-muted small">Idle</span>
+                                        <span class="slot-indicator badge small">Idle</span>
                                     </div>
                                 </div>
                             </div>
@@ -245,6 +270,8 @@
                 }
             </div>
         </div>
+
+
 
 
 
@@ -359,18 +386,20 @@
                 } 
                 else if (!slotA) { 
                     slotA = currentData; 
-                    setButtonState(btn, "A", "var(--color-theme-a)", "border-slot-a"); 
+                    // FIXED: Dynamically passes your custom light gray variable into the list button background engine
+                    setButtonState(btn, "A", "var(--color-panel-active-bg)", "border-slot-a"); 
                 } 
                 else if (!slotB) { 
                     slotB = currentData; 
-                    setButtonState(btn, "B", "var(--color-theme-b)", "border-slot-b"); 
+                    // FIXED: Dynamically passes your custom light gray variable into the list button background engine
+                    setButtonState(btn, "B", "var(--color-panel-active-bg)", "border-slot-b"); 
                 } 
                 else {
                     clearButtonState(slotA.element); 
                     slotA = slotB;
-                    setButtonState(slotA.element, "A", "var(--color-theme-a)", "border-slot-a");
+                    setButtonState(slotA.element, "A", "var(--color-panel-active-bg)", "border-slot-a");
                     slotB = currentData; 
-                    setButtonState(btn, "B", "var(--color-theme-b)", "border-slot-b");
+                    setButtonState(btn, "B", "var(--color-panel-active-bg)", "border-slot-b");
                 }
                 updateDashboards(); 
                 renderMapMatrix();
@@ -439,16 +468,27 @@
         });
 
 
+
         
                 function setButtonState(el, slotLabel, themeVar, borderClass) {
             if (!el) return;
             el.className = "list-group-item list-group-item-action p-3 game-select-btn mb-1 rounded text-white shadow-sm " + borderClass;
-            el.style.backgroundColor = themeVar;
+            el.style.backgroundColor = "var(--color-panel-active-bg)";
+            
+            // A. Update the Cartridge Logic Label States
             var indicator = el.querySelector(".slot-indicator");
             if (indicator) {
                 indicator.innerText = "Cartridge " + slotLabel;
-                indicator.classList.replace("bg-dark", "bg-white"); 
-                indicator.classList.replace("text-muted", "text-black");
+                indicator.style.setProperty('background-color', 'var(--color-badge-active-bg)', 'important');
+                indicator.style.setProperty('color', 'var(--color-badge-active-text)', 'important');
+                indicator.style.fontFamily = "inherit";
+            }
+            
+            // B. FIXED: Locate and update the neighboring file Size Badge state properties dynamically
+            var sizePill = el.querySelector(".size-badge-pill");
+            if (sizePill) {
+                sizePill.style.setProperty('background-color', 'var(--color-size-badge-active-bg)', 'important');
+                sizePill.style.setProperty('color', 'var(--color-size-badge-active-text)', 'important');
             }
         }
 
@@ -456,10 +496,22 @@
             if (!el) return;
             el.className = "list-group-item list-group-item-action p-3 game-select-btn mb-1 rounded bg-dark text-white shadow-sm";
             el.style.removeProperty("background-color");
+            
+            // A. Reset Cartridge Status Badge back to idle variables
             var indicator = el.querySelector(".slot-indicator");
             if (indicator) {
                 indicator.innerText = "Idle";
-                indicator.className = "slot-indicator badge bg-dark text-muted font-monospace small";
+                indicator.className = "slot-indicator badge small";
+                indicator.style.setProperty('background-color', 'var(--color-badge-idle-bg)', 'important');
+                indicator.style.setProperty('color', 'var(--color-badge-idle-text)', 'important');
+                indicator.style.fontFamily = "inherit";
+            }
+            
+            // B. FIXED: Reset the neighboring file Size Badge back to idle variables
+            var sizePill = el.querySelector(".size-badge-pill");
+            if (sizePill) {
+                sizePill.style.setProperty('background-color', 'var(--color-size-badge-idle-bg)', 'important');
+                sizePill.style.setProperty('color', 'var(--color-size-badge-idle-text)', 'important');
             }
         }
 
@@ -496,7 +548,6 @@
         function renderMapMatrix() {
             var sizeA = slotA ? slotA.size : 0, sizeB = slotB ? slotB.size : 0, deltaSize = Math.abs(sizeA - sizeB);
             
-            // FIXED: Pure text representation since the parent element controls the matching color style uniformly
             var textReadout = "A: " + sizeA + "K | B: " + sizeB + "K (" + deltaSize + "K Difference)";
             var altReadout = Math.max(sizeA, sizeB) + " KB Loaded";
             
