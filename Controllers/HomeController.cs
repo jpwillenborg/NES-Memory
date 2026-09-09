@@ -127,8 +127,7 @@ namespace NES_Box_Art.Controllers
                 .OrderBy(x => x.ReleaseYear)
                 .ToList();
 
-                // return View(gridData);
-                return Ok(gridData);
+                return View(gridData);
             }
             catch (Exception ex)
             {
