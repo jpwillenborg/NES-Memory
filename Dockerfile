@@ -1,5 +1,5 @@
 # 1. DEFINE REGISTRY AS AN EXPLICIT ARGUMENT UNTIL THE PARSER CLEARING
-ARG REGISTRY=mcr.microsoft.com
+ARG REGISTRY=://microsoft.com
 
 # Use the explicitly initialized registry block variables to clear the parser warning
 FROM ${REGISTRY}/dotnet/sdk:10.0 AS build-env
@@ -14,10 +14,10 @@ COPY . ./
 RUN dotnet publish -c Release -o out
 
 # 2. REDECLARE THE ARGUMENT FOR THE MULTI-STAGE SCOPE CONTINUATION
-ARG REGISTRY=mcr.microsoft.com
+ARG REGISTRY=://microsoft.com
 FROM ${REGISTRY}/dotnet/aspnet:10.0
 WORKDIR /app
 COPY --from=build-env /app/out .
 
-# Tell Docker to run your app executable
-ENTRYPOINT ["dotnet", "NES_Box_Art.dll"]
+# FIXED: Changed 'NES_Box_Art.dll' to match your exact file name with spaces
+ENTRYPOINT ["dotnet", "NES Box Art.dll"]
