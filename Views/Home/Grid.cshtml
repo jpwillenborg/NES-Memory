@@ -5,18 +5,33 @@
     ViewData["Title"] = "NES Game Memory Comparison";
 }
 
-<!-- FIXED: Moved and bundled the fully complete Google Fonts stack onto the index view page header -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<!-- Loads the Poppins font family weights natively from Google Fonts -->
+<link rel="preconnect" href="https://googleapis.com">
 <link rel="preconnect" href="https://gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-    /* TYPOGRAPHY OVERRIDE: Enforces Poppins globally across the entire view scope matrix, while protecting code fonts */
+    /* MASTER THEME CONTROL MATRIX: Edit color codes once in this block to change them everywhere */
+    :root {
+        --color-theme-a: #E31B23;       /* GAME A: Clear Crimson Red */
+        --color-theme-b: #8B0000;       /* GAME B: Deep Maroon */
+        --color-readout: #FFC107;       /* READOUTS: System Amber Yellow */
+        --color-panel-bg: #2b3035;      /* PANELS: Lighter Gray Card Background */
+        --color-page-bg: #1a1d20;       /* PAGE CANVAS: Main Background Canvas */
+        --color-scrollbar: #555a60;     /* SCROLLBAR: Independent list scrollbar thumb */
+        --color-reset-btn: #495057;     /* RESET BUTTON: Independent style color parameter */
+    }
+
+    body {
+        margin: 0;
+        background-color: var(--color-page-bg) !important;
+        color: #dee2e6;
+    }
+
     body, :not(.font-monospace):not(small):not(.slot-indicator):not(.badge) {
         font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
     }
 
-    /* Desktop Grid Configuration: 29 columns creates the block matrix effect */
     #pixel-matrix-rail {
         display: grid;
         grid-template-columns: repeat(29, 1fr); 
@@ -26,14 +41,13 @@
         border-radius: 8px;
     }
 
-    /* Calibrated Desktop Sidebar Scrolling Constraint */
     #payload-pool-wrapper {
-        max-height: 895px; 
+        /* FIXED: Lowered max-height from 888px to 886px to perfectly trim the baseline footprint */
+        max-height: 886px; 
         overflow-y: auto;
         padding-right: 4px; 
     }
 
-    /* Custom Retro Scrollbar Styling for Webkit Browsers */
     #payload-pool-wrapper::-webkit-scrollbar {
         width: 6px;
     }
@@ -42,11 +56,12 @@
         border-radius: 4px;
     }
     #payload-pool-wrapper::-webkit-scrollbar-thumb {
-        background: #FF6A00; 
+        background: var(--color-scrollbar); 
         border-radius: 4px;
     }
     #payload-pool-wrapper::-webkit-scrollbar-thumb:hover {
-        background: #E31B23; 
+        background: var(--color-theme-a); 
+        border-radius: 4px;
     }
 
     .memory-cell {
@@ -57,29 +72,44 @@
         transition: background-color 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .memory-cell.slot-a-color {
-        background-color: #E31B23 !important; 
-    }
+    .memory-cell.slot-a-color { background-color: var(--color-theme-a) !important; }
+    .memory-cell.slot-b-color { background-color: var(--color-theme-b) !important; }
 
-    .memory-cell.slot-b-color {
-        background-color: #FF6A00 !important; 
+
+
+
+
+
+
+
+
+
+    
+    
+    
+    
+        .card, .list-group-item.game-select-btn, .bg-body-tertiary {
+        background-color: var(--color-panel-bg) !important;
+        border-top: none !important;
+        border-right: none !important;
+        border-bottom: none !important;
+        border-left: none; 
     }
-     .game-select-btn {
+    
+    .badge.bg-black {
+        border: none !important;
+    }
+    
+    .game-select-btn {
         transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
         cursor: pointer;
-        border: 1px solid #2d3238 !important; 
     }
     .game-select-btn:hover {
         transform: translateX(4px);
     }
     
-    .bg-nes-red { background-color: #E31B23 !important; }
-    /* UPDATED: Background mapping color updated to arcade orange */
-    .bg-gamepad-gray { background-color: #FF6A00 !important; }
-    
-    .border-slot-a { border-left: 6px solid #E31B23 !important; }
-    /* UPDATED: Sidebar active item border highlight updated to orange */
-    .border-slot-b { border-left: 6px solid #FF6A00 !important; }
+    .border-slot-a { border-left: 6px solid var(--color-theme-a) !important; }
+    .border-slot-b { border-left: 6px solid var(--color-theme-b) !important; }
     
     .slot-art-frame {
         width: 85px;
@@ -99,61 +129,54 @@
     }
 
     .retro-select {
-        background-color: #1a1d20 !important;
+        background-color: var(--color-page-bg) !important;
         border: 1px solid #2d3238 !important;
         color: #dee2e6 !important;
     }
     .retro-select:focus {
-        border-color: #E31B23 !important;
+        border-color: var(--color-theme-a) !important;
         box-shadow: 0 0 0 0.25rem rgba(227, 27, 35, 0.25) !important;
     }
 
     @Html.Raw("@media (max-width: 767.98px) {")
-        .container-fluid {
-            padding-left: 10px !important;
-            padding-right: 10px !important;
-        }
-        #payload-pool-wrapper {
-            max-height: none !important;
-            overflow-y: visible !important;
-            padding-right: 0 !important;
-        }
-        .sidebar-art-frame {
-            width: 50px;
-            max-height: 70px;
-        }
-        .game-select-btn {
-            padding: 10px !important;
-        }
-        .item-title {
-            font-size: 0.95rem !important;
-        }
-        #pixel-matrix-rail {
-            grid-template-columns: repeat(24, 1fr); 
-            gap: 2px;
-            padding: 8px !important;
-            max-height: none !important; 
-        }
-        .memory-cell {
-            width: auto;
-            height: auto;
-            aspect-ratio: 1 / 1;
-        }
+        .container-fluid { padding-left: 10px !important; padding-right: 10px !important; }
+        #payload-pool-wrapper { max-height: none !important; overflow-y: visible !important; padding-right: 0 !important; }
+        .sidebar-art-frame { width: 50px; max-height: 70px; }
+        .game-select-btn { padding: 10px !important; }
+        .item-title { font-size: 0.95rem !important; }
+        #pixel-matrix-rail { grid-template-columns: repeat(24, 1fr); gap: 2px; padding: 8px !important; max-height: none !important; }
+        .memory-cell { width: auto; height: auto; aspect-ratio: 1 / 1; }
+        .col-lg-4.col-md-5 { margin-top: calc(1.5rem + 6px) !important; }
     @Html.Raw("}")
 </style>
-<div class="container-fluid my-4 px-md-5">
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class="container-fluid my-4 px-md-5">
     <div class="text-center mb-4">
-        <!-- FIXED: Added 'mb-4' to add clear breathing space below the technical title heading -->
         <h1 class="display-5 fw-bold text-light fs-2 fs-md-1 mb-4">NES System Bus & Memory Allocation Matrix</h1>
         
-        <!-- FIXED: Changed parent block spacing to 'mb-5' to create a distinct layout break below the summary text -->
-        <p class="lead text-muted mb-5">
-            Analyze how custom mapper chips expand the standard 64KB CPU address space via dynamic bank allocation. 
-            The sector rail projects physical memory footprints in real-time. Game A loads data structures using 
-            <span style="color: #E31B23; font-weight: bold;">Red</span> sectors, Game B flags address offsets using 
-            <span style="color: #FF6A00; font-weight: bold;">Orange</span> sectors, and shared unbanked memory layers mirror the smaller constraint.
+        <!-- FIXED: Adjusted font-size inline parameter up to a balanced 1.05rem -->
+        <p class="text-muted mb-4" style="max-width: 900px; margin-right: auto; margin-left: auto; font-size: 1.05rem; line-height: 1.6;">
+            Standard NES hardware was originally restricted to a small 64KB address space boundary - until custom Memory Management Controllers (MMCs) or Mappers were introduced. This tool helps visualize how mappers expanded the boundaries to house larger game maps and complex audio.
         </p>
-        @* <a asp-action="Index" class="btn btn-outline-secondary btn-sm">← Back to Main Gallery</a> *@
+        
+        <!-- FIXED: Applied the same 1.05rem balance to the second paragraph to keep text blocks matching -->
+        <p class="text-muted mb-5" style="max-width: 900px; margin-right: auto; margin-left: auto; font-size: 1.05rem; line-height: 1.6;">
+            Select two games from the list to see how 
+            <span style="color: var(--color-theme-a); font-weight: bold;">CARTRIDGE A</span> and 
+            <span style="color: var(--color-theme-b); font-weight: bold;">CARTRIDGE B</span> compare in terms of memory footprint.
+        </p>
     </div>
 
     @if (ViewBag.Error != null)
@@ -164,13 +187,13 @@
         </div>
     }
 
-    <div class="row g-3 g-md-4 flex-column-reverse flex-md-row">
-        <!-- LEFT COLUMN: GAME LIST AND SORT FILTERS -->
+    <div class="row flex-column-reverse flex-md-row" style="--bs-gutter-x: calc(1rem + 14px) !important;">
+        <!-- LEFT COLUMN: SIDEBAR LIST VIEWS -->
         <div class="col-lg-4 col-md-5">
-            <div class="card p-3 mb-2 bg-dark border border-secondary border-opacity-25 rounded shadow-sm">
-                <label for="retro-sort-dropdown" class="form-label text-muted small text-uppercase font-monospace mb-2">Bus Matrix Sorting Engine</label>
+            <div class="card p-3 bg-dark border border-secondary border-opacity-25 rounded shadow-sm" style="margin-bottom: calc(1.5rem + 6px) !important;">
+                <label for="retro-sort-dropdown" class="form-label text-muted small text-uppercase mb-2">Bus Matrix Sorting Engine</label>
                 <div class="d-flex gap-2">
-                    <select id="retro-sort-dropdown" class="form-select form-select-sm retro-select font-monospace">
+                    <select id="retro-sort-dropdown" class="form-select form-select-sm retro-select">
                         <option value="release">Release Date (Oldest)</option>
                         <option value="release-desc">Release Date (Newest)</option>
                         <option value="alpha">Alphabetical (A-Z)</option>
@@ -178,7 +201,7 @@
                         <option value="size-desc">Memory Size (Largest)</option>
                         <option value="chip">Memory Chip Type</option>
                     </select>
-                    <button type="button" id="clear-selection-btn" class="btn btn-sm font-monospace text-white" style="background-color: #E31B23; border: 1px solid #b31218;" title="Reset Slots">Reset</button>
+                    <button type="button" id="clear-selection-btn" class="btn btn-sm text-white" style="background-color: var(--color-reset-btn); border: 1px solid rgba(0,0,0,0.1);" title="Reset Slots">Reset</button>
                 </div>
             </div>
             
@@ -206,8 +229,8 @@
                                         <span class="badge bg-secondary opacity-75 ms-1">@item.SizeInKb K</span>
                                     </div>
                                     <div class="d-flex justify-content-between align-items-center mt-2">
-                                        <small class="text-muted text-truncate font-monospace small">@item.MapperChip | @item.ReleaseYear</small>
-                                        <span class="slot-indicator badge bg-dark text-muted font-monospace small">Idle</span>
+                                        <small class="text-muted text-truncate small">@item.MapperChip | @item.ReleaseYear</small>
+                                        <span class="slot-indicator badge bg-dark text-muted small">Idle</span>
                                     </div>
                                 </div>
                             </div>
@@ -216,22 +239,37 @@
                 }
                 else
                 {
-                    <div class="text-center p-4 text-muted border border-secondary border-opacity-25 rounded bg-dark font-monospace small shadow-sm">
+                    <div class="text-center p-4 text-muted border border-secondary border-opacity-25 rounded bg-dark small shadow-sm">
                         --- No Games Found ---
                     </div>
                 }
             </div>
         </div>
-        <!-- RIGHT COLUMN: CHOSEN SLOTS AND VISUAL MATRIX GRID -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                <!-- RIGHT COLUMN: CHOSEN SLOTS AND VISUAL MATRIX GRID -->
         <div class="col-lg-8 col-md-7">
-            <div class="row g-2 mb-3">
+            <div class="row g-3 mb-4 pb-2" style="--bs-gutter-x: calc(1.5rem + 6px) !important;">
                 <!-- Slot A Dashboard -->
                 <div class="col-12 col-md-6">
-                    <div class="card p-3 border-0 bg-dark rounded border-start border-4 border-slot-a shadow-sm" style="min-height: 135px;">
+                    <div class="card p-3 bg-dark rounded border-start border-4 border-slot-a shadow-sm" style="min-height: 135px; border-top:none; border-right:none; border-bottom:none;">
                         <div class="d-flex align-items-center gap-3 h-100">
                             <img src="https://placehold.co" id="slot-a-img" class="rounded slot-art-frame d-none" alt="">
                             <div class="flex-grow-1 overflow-hidden">
-                                <span class="text-muted small d-block font-monospace text-uppercase" style="color: #E31B23 !important;">[ Game A Cartridge ]</span>
+                                <span class="small d-block text-uppercase" style="color: var(--color-theme-a) !important; font-weight: 500;">[ CARTRIDGE A ]</span>
                                 <h5 class="m-0 text-white text-truncate mt-1" id="slot-a-title">--- Empty ---</h5>
                                 <small class="text-muted d-block mt-1" id="slot-a-meta">Select a game on the left</small>
                             </div>
@@ -240,12 +278,11 @@
                 </div>
                 <!-- Slot B Dashboard -->
                 <div class="col-12 col-md-6">
-                    <div class="card p-3 border-0 bg-dark rounded border-start border-4 border-slot-b shadow-sm" style="min-height: 135px;">
+                    <div class="card p-3 bg-dark rounded border-start border-4 border-slot-b shadow-sm" style="min-height: 135px; border-top:none; border-right:none; border-bottom:none;">
                         <div class="d-flex align-items-center gap-3 h-100">
                             <img src="https://placehold.co" id="slot-b-img" class="rounded slot-art-frame d-none" alt="">
                             <div class="flex-grow-1 overflow-hidden">
-                                <!-- UPDATED: Dashboard panel sub-header color switched to orange -->
-                                <span class="text-muted small d-block font-monospace text-uppercase" style="color: #FF6A00 !important;">[ Game B Cartridge ]</span>
+                                <span class="small d-block text-uppercase" style="color: var(--color-theme-b) !important; font-weight: 500;">[ CARTRIDGE B ]</span>
                                 <h5 class="m-0 text-white text-truncate mt-1" id="slot-b-title">--- Empty ---</h5>
                                 <small class="text-muted d-block mt-1" id="slot-b-meta">Select a game on the left</small>
                             </div>
@@ -254,11 +291,12 @@
                 </div>
             </div>
 
-            <div class="card p-3 p-md-4 shadow-sm border border-secondary border-opacity-25 bg-body-tertiary">
+            <div class="card p-3 p-md-4 shadow-sm bg-body-tertiary">
                 <div class="d-flex justify-content-between align-items-center mb-3 w-100 flex-wrap gap-2">
                     <h5 class="m-0 text-muted fs-6 fs-md-5">Visual Size Comparison (in KB)</h5>
-                    <div class="badge bg-black px-3 py-2 text-white border border-secondary border-opacity-50 small">
-                        Difference: <span class="text-warning fw-bold" id="live-difference-readout">0 KB</span>
+                    <!-- FIXED: Removed text-white and applied custom color directly to the parent badge wrapper -->
+                    <div class="badge bg-black px-3 py-2 small" style="color: var(--color-readout); font-weight: bold;">
+                        Difference: <span id="live-difference-readout">0 KB</span>
                     </div>
                 </div>
 
@@ -271,246 +309,223 @@
                 
                 <div class="row mt-3 pt-2 border-top border-secondary border-opacity-25 text-center g-2 small w-100 mx-0">
                     <div class="col-4 text-start text-truncate"><span class="d-inline-block rounded-1 me-1" style="width:10px; height:10px; background:rgba(255,255,255,0.08);"></span> <span class="text-muted">Empty</span></div>
-                    <div class="col-4 text-start text-truncate"><span class="d-inline-block rounded-1 me-1" style="width:10px; height:10px; background:#E31B23;"></span> <span style="color: #E31B23;">Game A</span></div>
-                    <!-- UPDATED: Legend indicator dot background and text label color switched to orange -->
-                    <div class="col-4 text-start text-truncate"><span class="d-inline-block rounded-1 me-1" style="width:10px; height:10px; background:#FF6A00;"></span> <span style="color: #FF6A00;">Game B</span></div>
+                    <div class="col-4 text-start text-truncate"><span class="d-inline-block rounded-1 me-1" style="width:10px; height:10px; background: var(--color-theme-a);"></span> <span style="color: var(--color-theme-a);">Game A</span></div>
+                    <div class="col-4 text-start text-truncate"><span class="d-inline-block rounded-1 me-1" style="width:10px; height:10px; background: var(--color-theme-b);"></span> <span style="color: var(--color-theme-b);">Game B</span></div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        const wrapper = document.getElementById("payload-pool-wrapper");
-        const clearBtn = document.getElementById("clear-selection-btn");
-        const cells = document.querySelectorAll(".memory-cell");
-        const diffReadout = document.getElementById("live-difference-readout");
-        const sortDropdown = document.getElementById("retro-sort-dropdown");
+        var wrapper = document.getElementById("payload-pool-wrapper");
+        var clearBtn = document.getElementById("clear-selection-btn");
+        var sortDropdown = document.getElementById("retro-sort-dropdown");
+        var diffReadout = document.getElementById("live-difference-readout");
+        var cells = document.querySelectorAll(".memory-cell");
 
-        let slotA = null;
-        let slotB = null;
+        var slotA = null;
+        var slotB = null;
 
-        function initClickEvents() {
-            const itemButtons = Array.from(wrapper.querySelectorAll(".game-select-btn"));
-            
-            itemButtons.forEach(btn => {
-                const clonedBtn = btn.cloneNode(true);
-                btn.parentNode.replaceChild(clonedBtn, btn);
-                
-                clonedBtn.addEventListener("click", function () {
-                    const name = this.getAttribute("data-name");
-                    const size = parseInt(this.getAttribute("data-size"));
-                    const chip = this.getAttribute("data-chip");
-                    const year = this.getAttribute("data-year");
-                    const img = this.getAttribute("data-img");
-                    const currentData = { name, size, chip, year, img, element: this };
+        // Event delegation handles dynamic list clicks safely across sorting updates
+        if (wrapper) {
+            wrapper.addEventListener("click", function (e) {
+                var btn = e.target.closest(".game-select-btn");
+                if (!btn) return;
 
-                    if (slotA && slotA.name === name) {
-                        slotA = null;
-                        clearButtonState(this);
-                    } 
-                    else if (slotB && slotB.name === name) {
-                        slotB = null;
-                        clearButtonState(this);
-                    } 
-                    else if (!slotA) {
-                        slotA = currentData;
-                        setButtonState(this, "A", "bg-nes-red text-white border-slot-a");
-                    } 
-                    else if (!slotB) {
-                        slotB = currentData;
-                        setButtonState(this, "B", "bg-gamepad-gray text-dark border-slot-b");
-                    } 
-                    else {
-                        clearButtonState(slotA.element);
-                        slotA = slotB;
-                        setButtonState(slotA.element, "A", "bg-nes-red text-white border-slot-a");
-                        
-                        slotB = currentData;
-                        setButtonState(this, "B", "bg-gamepad-gray text-dark border-slot-b");
-                    }
+                var name = btn.getAttribute("data-name");
+                var size = parseInt(btn.getAttribute("data-size")) || 0;
+                var chip = btn.getAttribute("data-chip");
+                var year = btn.getAttribute("data-year");
+                var img = btn.getAttribute("data-img");
+                var currentData = { name: name, size: size, chip: chip, year: year, img: img, element: btn };
 
-                    updateDashboards();
-                    renderMapMatrix();
-                });
+                if (slotA && slotA.name === name) { 
+                    slotA = null; 
+                    clearButtonState(btn); 
+                } 
+                else if (slotB && slotB.name === name) { 
+                    slotB = null; 
+                    clearButtonState(btn); 
+                } 
+                else if (!slotA) { 
+                    slotA = currentData; 
+                    setButtonState(btn, "A", "var(--color-theme-a)", "border-slot-a"); 
+                } 
+                else if (!slotB) { 
+                    slotB = currentData; 
+                    setButtonState(btn, "B", "var(--color-theme-b)", "border-slot-b"); 
+                } 
+                else {
+                    clearButtonState(slotA.element); 
+                    slotA = slotB;
+                    setButtonState(slotA.element, "A", "var(--color-theme-a)", "border-slot-a");
+                    slotB = currentData; 
+                    setButtonState(btn, "B", "var(--color-theme-b)", "border-slot-b");
+                }
+                updateDashboards(); 
+                renderMapMatrix();
             });
         }
-        sortDropdown.addEventListener("change", function () {
-            const items = Array.from(wrapper.querySelectorAll(".game-select-btn"));
-            const sortCriteria = this.value;
 
-            items.sort((a, b) => {
-                const nameA = a.getAttribute("data-name");
-                const nameB = b.getAttribute("data-name");
+        sortDropdown.addEventListener("change", function () {
+            var items = Array.from(wrapper.querySelectorAll(".game-select-btn"));
+            if(!items.length) return;
+            var sortCriteria = this.value;
+
+            items.sort(function (a, b) {
+                var nameA = a.getAttribute("data-name") || "";
+                var nameB = b.getAttribute("data-name") || "";
 
                 if (sortCriteria === "release") {
-                    const yearA = parseInt(a.getAttribute("data-year")) || 0;
-                    const yearB = parseInt(b.getAttribute("data-year")) || 0;
-                    
-                    if (yearA === yearB) {
-                        if (nameA === "Super Mario Bros.") return -1;
-                        if (nameB === "Super Mario Bros.") return 1;
-                        return nameA.localeCompare(nameB);
-                    }
+                    var yearA = parseInt(a.getAttribute("data-year")) || 0;
+                    var yearB = parseInt(b.getAttribute("data-year")) || 0;
+                    if (yearA === yearB) return nameA.localeCompare(nameB);
                     return yearA - yearB;
                 } 
                 else if (sortCriteria === "release-desc") {
-                    const yearA = parseInt(a.getAttribute("data-year")) || 0;
-                    const yearB = parseInt(b.getAttribute("data-year")) || 0;
-                    
-                    if (yearA === yearB) {
-                        if (nameA === "Super Mario Bros.") return -1;
-                        if (nameB === "Super Mario Bros.") return 1;
-                        return nameB.localeCompare(nameA);
-                    }
+                    var yearA = parseInt(a.getAttribute("data-year")) || 0;
+                    var yearB = parseInt(b.getAttribute("data-year")) || 0;
+                    if (yearA === yearB) return nameB.localeCompare(nameA);
                     return yearB - yearA;
                 }
                 else if (sortCriteria === "alpha") {
                     return nameA.toLowerCase().localeCompare(nameB.toLowerCase());
                 } 
                 else if (sortCriteria === "size-desc") {
-                    const sizeA = parseInt(a.getAttribute("data-size")) || 0;
-                    const sizeB = parseInt(b.getAttribute("data-size")) || 0;
+                    var sizeA = parseInt(a.getAttribute("data-size")) || 0;
+                    var sizeB = parseInt(b.getAttribute("data-size")) || 0;
                     if (sizeA === sizeB) return nameA.localeCompare(nameB);
                     return sizeB - sizeA;
                 } 
                 else if (sortCriteria === "size-asc") {
-                    const sizeA = parseInt(a.getAttribute("data-size")) || 0;
-                    const sizeB = parseInt(b.getAttribute("data-size")) || 0;
+                    var sizeA = parseInt(a.getAttribute("data-size")) || 0;
+                    var sizeB = parseInt(b.getAttribute("data-size")) || 0;
                     if (sizeA === sizeB) return nameA.localeCompare(nameB);
                     return sizeA - sizeB;
                 } 
                 else if (sortCriteria === "chip") {
-                    const chipA = (a.getAttribute("data-chip") || "").toLowerCase();
-                    const chipB = (b.getAttribute("data-chip") || "").toLowerCase();
+                    var chipA = (a.getAttribute("data-chip") || "").toLowerCase();
+                    var chipB = (b.getAttribute("data-chip") || "").toLowerCase();
                     if (chipA === chipB) return nameA.localeCompare(nameB);
                     return chipA.localeCompare(chipB);
                 }
                 return 0;
             });
 
-            items.forEach(item => wrapper.appendChild(item));
-            
-            if (slotA) {
-                const foundA = items.find(i => i.getAttribute("data-name") === slotA.name);
-                if (foundA) slotA.element = foundA;
-            }
-            if (slotB) {
-                const foundB = items.find(i => i.getAttribute("data-name") === slotB.name);
-                if (foundB) slotB.element = foundB;
-            }
-
-            initClickEvents();
+            items.forEach(function (item) { wrapper.appendChild(item); });
+            if (slotA) { var foundA = items.find(function(i) { return i.getAttribute("data-name") === slotA.name; }); if (foundA) slotA.element = foundA; }
+            if (slotB) { var foundB = items.find(function(i) { return i.getAttribute("data-name") === slotB.name; }); if (foundB) slotB.element = foundB; }
         });
 
-        setTimeout(() => {
-            sortDropdown.dispatchEvent(new Event('change'));
-        }, 50);
-
         clearBtn.addEventListener("click", function() {
-            if(slotA) clearButtonState(slotA.element);
+            if(slotA) clearButtonState(slotA.element); 
             if(slotB) clearButtonState(slotB.element);
-            slotA = null;
+            slotA = null; 
             slotB = null;
-            const items = wrapper.querySelectorAll(".game-select-btn");
-            items.forEach(item => item.style.removeProperty("display"));
-            updateDashboards();
+            var items = wrapper.querySelectorAll(".game-select-btn");
+            items.forEach(function (item) { item.style.removeProperty("display"); });
+            updateDashboards(); 
             renderMapMatrix();
         });
 
-        function setButtonState(el, slotLabel, classes) {
-            el.classList.remove("bg-dark", "text-white");
-            el.classList.remove("bg-gamepad-gray", "text-dark", "border-slot-a", "bg-nes-red", "text-white", "border-slot-b");
-            el.className += ` ${classes}`;
-            
-            const indicator = el.querySelector(".slot-indicator");
-            indicator.innerText = `Slot ${slotLabel}`;
-            indicator.classList.replace("bg-dark", "bg-white");
-            indicator.classList.replace("text-muted", "text-black");
+
+        
+                function setButtonState(el, slotLabel, themeVar, borderClass) {
+            if (!el) return;
+            el.className = "list-group-item list-group-item-action p-3 game-select-btn mb-1 rounded text-white shadow-sm " + borderClass;
+            el.style.backgroundColor = themeVar;
+            var indicator = el.querySelector(".slot-indicator");
+            if (indicator) {
+                indicator.innerText = "Cartridge " + slotLabel;
+                indicator.classList.replace("bg-dark", "bg-white"); 
+                indicator.classList.replace("text-muted", "text-black");
+            }
         }
 
         function clearButtonState(el) {
             if (!el) return;
-            el.classList.remove("bg-gamepad-gray", "text-dark", "border-slot-a", "bg-nes-red", "text-white", "border-slot-b");
-            el.className += " bg-dark text-white";
-            
-            const indicator = el.querySelector(".slot-indicator");
-            indicator.innerText = "Idle";
-            indicator.className = "slot-indicator badge bg-dark text-muted font-monospace small";
+            el.className = "list-group-item list-group-item-action p-3 game-select-btn mb-1 rounded bg-dark text-white shadow-sm";
+            el.style.removeProperty("background-color");
+            var indicator = el.querySelector(".slot-indicator");
+            if (indicator) {
+                indicator.innerText = "Idle";
+                indicator.className = "slot-indicator badge bg-dark text-muted font-monospace small";
+            }
         }
 
         function updateDashboards() {
-            const titleA = document.getElementById("slot-a-title");
-            const metaA = document.getElementById("slot-a-meta");
-            const imgA = document.getElementById("slot-a-img");
-            
-            if (slotA) {
-                titleA.innerText = slotA.name;
-                metaA.innerText = `${slotA.size} KB | ${slotA.chip} | ${slotA.year}`;
-                if(slotA.img) {
-                    imgA.src = slotA.img;
-                    imgA.classList.remove("d-none");
-                }
-            } else {
-                titleA.innerText = "--- Empty ---";
-                metaA.innerText = "Select a game on the left";
-                imgA.classList.add("d-none");
-                imgA.src = "";
+            var titleA = document.getElementById("slot-a-title"), metaA = document.getElementById("slot-a-meta"), imgA = document.getElementById("slot-a-img");
+            if (slotA) { 
+                titleA.innerText = slotA.name; 
+                metaA.innerText = slotA.size + " KB | " + slotA.chip + " | " + slotA.year; 
+                imgA.src = slotA.img; 
+                imgA.classList.remove("d-none"); 
+            } 
+            else { 
+                titleA.innerText = "--- Empty ---"; 
+                metaA.innerText = "Select a game on the left"; 
+                imgA.classList.add("d-none"); 
+                imgA.src = ""; 
             }
 
-            const titleB = document.getElementById("slot-b-title");
-            const metaB = document.getElementById("slot-b-meta");
-            const imgB = document.getElementById("slot-b-img");
-            
-            if (slotB) {
-                titleB.innerText = slotB.name;
-                metaB.innerText = `${slotB.size} KB | ${slotB.chip} | ${slotB.year}`;
-                if(slotB.img) {
-                    imgB.src = slotB.img;
-                    imgB.classList.remove("d-none");
-                }
-            } else {
-                titleB.innerText = "--- Empty ---";
-                metaB.innerText = "Select a game on the left";
-                imgB.classList.add("d-none");
-                imgB.src = "";
+            var titleB = document.getElementById("slot-b-title"), metaB = document.getElementById("slot-b-meta"), imgB = document.getElementById("slot-b-img");
+            if (slotB) { 
+                titleB.innerText = slotB.name; 
+                metaB.innerText = slotB.size + " KB | " + slotB.chip + " | " + slotB.year; 
+                imgB.src = slotB.img; 
+                imgB.classList.remove("d-none"); 
+            } 
+            else { 
+                titleB.innerText = "--- Empty ---"; 
+                metaB.innerText = "Select a game on the left"; 
+                imgB.classList.add("d-none"); 
+                imgB.src = ""; 
             }
         }
 
         function renderMapMatrix() {
-            const sizeA = slotA ? slotA.size : 0;
-            const sizeB = slotB ? slotB.size : 0;
-            const deltaSize = Math.abs(sizeA - sizeB);
+            var sizeA = slotA ? slotA.size : 0, sizeB = slotB ? slotB.size : 0, deltaSize = Math.abs(sizeA - sizeB);
             
-            if (sizeA > 0 && sizeB > 0) {
-                diffReadout.innerText = `A: ${sizeA}K | B: ${sizeB}K (${deltaSize}K Difference)`;
-            } else if (sizeA > 0 || sizeB > 0) {
-                diffReadout.innerText = `${Math.max(sizeA, sizeB)} KB Loaded`;
-            } else {
-                diffReadout.innerText = "0 KB";
+            // FIXED: Pure text representation since the parent element controls the matching color style uniformly
+            var textReadout = "A: " + sizeA + "K | B: " + sizeB + "K (" + deltaSize + "K Difference)";
+            var altReadout = Math.max(sizeA, sizeB) + " KB Loaded";
+            
+            if (diffReadout) {
+                diffReadout.innerHTML = (sizeA > 0 && sizeB > 0) ? textReadout : (sizeA > 0 || sizeB > 0) ? altReadout : "0 KB";
             }
-
-            cells.forEach(cell => {
-                const idx = parseInt(cell.getAttribute("data-index"));
+            
+            cells.forEach(function (cell) {
+                var idx = parseInt(cell.getAttribute("data-index")); 
                 cell.classList.remove("slot-a-color", "slot-b-color");
-
-                const trackingA = (idx <= sizeA);
-                const trackingB = (idx <= sizeB);
-
-                if (trackingA && trackingB) {
-                    if (sizeA <= sizeB) {
-                        cell.classList.add("slot-a-color");
-                    } else {
-                        cell.classList.add("slot-b-color");
-                    }
-                } else if (trackingA) {
-                    cell.classList.add("slot-a-color");
-                } else if (trackingB) {
-                    cell.classList.add("slot-b-color");
+                var trackingA = (idx <= sizeA), trackingB = (idx <= sizeB);
+                if (trackingA && trackingB) { 
+                    cell.classList.add(sizeA <= sizeB ? "slot-a-color" : "slot-b-color"); 
+                } 
+                else if (trackingA) { 
+                    cell.classList.add("slot-a-color"); 
+                } 
+                else if (trackingB) { 
+                    cell.classList.add("slot-b-color"); 
                 }
             });
         }
-
-        initClickEvents();
     });
 </script>
+
+
+
+
+
+
+
+
