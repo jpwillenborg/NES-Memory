@@ -5,101 +5,95 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NES System Bus & Memory Allocation Matrix</title>
     
-    <!-- FONTS CDN: Loads geometric Poppins typography -->
+    <!-- FONTS CDN: Loads modern geometric Poppins typography -->
     <link rel="preconnect" href="https://googleapis.com">
     <link rel="preconnect" href="https://gstatic.com" crossorigin>
     <link href="https://googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        /* EMBEDDED LAYOUT ENGINE: Hardcoded Bootstrap structural replacements */
-        *, ::after, ::before { box-sizing: border-box; }
-        body { margin: 0; background-color: #212529 !important; color: #fff !important; font-family: 'Poppins', sans-serif !important; }
-        .container-fluid { width: 100%; padding-right: 1.5rem; padding-left: 1.5rem; margin-right: auto; margin-left: auto; }
-        .row { display: flex; flex-wrap: wrap; margin-top: -1.5rem; margin-right: -.75rem; margin-left: -.75rem; }
-        .row > * { flex-shrink: 0; width: 100%; max-width: 100%; padding-right: .75rem; padding-left: .75rem; margin-top: 1.5rem; }
-        @media (min-width: 768px) {
-            .col-md-5 { flex: 0 0 auto; width: 41.66666667%; }
-            .col-md-7 { flex: 0 0 auto; width: 58.33333333%; }
-            .col-md-6 { flex: 0 0 auto; width: 50%; }
-        }
-        @media (min-width: 992px) {
-            .col-lg-4 { flex: 0 0 auto; width: 33.33333333%; }
-            .col-lg-8 { flex: 0 0 auto; width: 66.66666667%; }
-        }
-        .flex-column-reverse { flex-direction: column-reverse !important; }
-        @media (min-width: 768px) { .flex-md-row { flex-direction: row !important; } }
-        .text-center { text-align: center !important; }
-        .mb-4 { margin-bottom: 1.5rem !important; } .mb-5 { margin-bottom: 3rem !important; } .mt-2 { margin-top: .5rem !important; } .mt-3 { margin-top: 1rem !important; }
-        .my-4 { margin-top: 1.5rem !important; margin-bottom: 1.5rem !important; }
-        .p-3 { padding: 1rem !important; } .p-md-4 { padding: 1.5rem !important; } .pt-2 { padding-top: .5rem !important; }
-        .fw-bold { font-weight: 700 !important; } .text-light { color: #f8f9fa !important; } .text-muted { color: #6c757d !important; }
-        .badge { display: inline-block; padding: .35em .65em; font-size: .75em; font-weight: 700; line-height: 1; text-align: center; white-space: nowrap; vertical-align: baseline; border-radius: .375rem; }
-        .bg-secondary { background-color: #6c757d !important; } .bg-black { background-color: #000 !important; } .bg-dark { background-color: #212529 !important; }
-        .opacity-75 { opacity: .75 !important; } .text-warning { color: #ffc107 !important; } .text-white { color: #fff !important; }
-        .card { position: relative; display: flex; flex-direction: column; min-width: 0; word-wrap: break-word; background-color: #fff; background-clip: border-box; border: 1px solid rgba(0,0,0,.175); border-radius: .375rem; }
-        .bg-body-tertiary { background-color: #111416 !important; } .border-secondary { border-color: #6c757d !important; } .border-opacity-25 { --bs-border-opacity: 0.25; border-color: rgba(108, 117, 125, 0.25) !important; }
-        .rounded { border-radius: .375rem !important; } .shadow-sm { box-shadow: 0 .125rem .25rem rgba(0,0,0,.075) !important; }
-        .d-flex { display: flex !important; } .align-items-center { align-items: center !important; } .justify-content-between { justify-content: space-between !important; }
-        .flex-grow-1 { flex-grow: 1 !important; } .overflow-hidden { overflow: hidden !important; } .text-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .font-monospace { font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important; }
-        .gap-2 { gap: .5rem !important; } .gap-3 { gap: 1rem !important; } .d-none { display: none !important; }
-        /* RETRO USER INTERFACE DECORATIONS */
-        #pixel-matrix-rail {
-            display: grid;
-            grid-template-columns: repeat(29, 1fr); 
-            gap: 6px; 
-            background-color: #000000;
-            padding: 20px;
-            border-radius: 8px;
-        }
-        #payload-pool-wrapper {
-            max-height: 895px; 
-            overflow-y: auto;
-            padding-right: 4px; 
-        }
+        /* STANDALONE LAYOUT ENGINE: Direct custom styles completely independent of outside frameworks */
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 24px; background-color: #1a1d20; color: #dee2e6; font-family: 'Poppins', sans-serif !important; }
+        
+        .main-container { max-width: 1400px; margin: 0 auto; padding: 0 15px; }
+        .text-center { text-align: center; margin-bottom: 32px; }
+        .page-title { color: #f8f9fa; font-weight: 700; font-size: 2.5rem; margin: 0 0 16px 0; }
+        .page-summary { color: #6c757d; font-size: 1.1rem; line-height: 1.6; max-width: 900px; margin: 0 auto; }
+        
+        /* Flexbox Two-Column Dashboard Setup */
+        .workspace-layout { display: flex; gap: 24px; flex-direction: column-reverse; }
+        @media (min-width: 768px) { .workspace-layout { flex-direction: row; } }
+        
+        .left-sidebar { flex: 0 0 100%; }
+        .right-matrix-panel { flex: 0 0 100%; }
+        @media (min-width: 768px) { .left-sidebar { flex: 0 0 35%; } .right-matrix-panel { flex: 0 0 63%; } }
+        @media (min-width: 1200px) { .left-sidebar { flex: 0 0 30%; } .right-matrix-panel { flex: 0 0 70%; } }
+
+        /* Component Panels */
+        .custom-card { background-color: #212529; border: 1px solid rgba(108, 117, 125, 0.2); border-radius: 8px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .engine-label { color: #6c757d; font-family: monospace; font-size: 0.85rem; text-uppercase: true; display: block; margin-bottom: 8px; }
+        .filter-flex { display: flex; gap: 8px; }
+        .retro-select { background-color: #111416; border: 1px solid #2d3238; color: #dee2e6; padding: 8px; font-size: 0.9rem; border-radius: 4px; flex-grow: 1; font-family: monospace; }
+        .retro-select:focus { border-color: #E31B23; outline: none; }
+        .reset-btn { background-color: #E31B23; border: 1px solid #b31218; color: #fff; padding: 8px 16px; border-radius: 4px; font-family: monospace; cursor: pointer; font-weight: bold; }
+        
+        /* Game List Scroll Settings */
+        #payload-pool-wrapper { max-height: 750px; overflow-y: auto; padding-right: 4px; }
         #payload-pool-wrapper::-webkit-scrollbar { width: 6px; }
         #payload-pool-wrapper::-webkit-scrollbar-track { background: #111111; border-radius: 4px; }
         #payload-pool-wrapper::-webkit-scrollbar-thumb { background: #FF6A00; border-radius: 4px; }
-        #payload-pool-wrapper::-webkit-scrollbar-thumb:hover { background: #E31B23; }
-
-        .memory-cell {
-            aspect-ratio: 1 / 1; 
-            background-color: rgba(255, 255, 255, 0.08); 
-            border: 1px solid rgba(255, 255, 255, 0.02);
-            border-radius: 2px;
-            transition: background-color 0.2s ease;
-        }
-        .memory-cell.slot-a-color { background-color: #E31B23 !important; }
-        .memory-cell.slot-b-color { background-color: #545759 !important; }
-
-        .game-select-btn { transition: transform 0.15s; cursor: pointer; border: 1px solid #2d3238 !important; display: block; width: 100%; text-decoration: none; }
+        /* Game List Items */
+        .game-select-btn { display: block; background-color: #212529; border: 1px solid #2d3238; border-radius: 6px; padding: 12px; margin-bottom: 8px; color: white; text-decoration: none; cursor: pointer; transition: transform 0.15s; }
         .game-select-btn:hover { transform: translateX(4px); }
-        .bg-nes-red { background-color: #E31B23 !important; }
-        .bg-gamepad-gray { background-color: #545759 !important; }
+        .item-flex { display: flex; align-items: center; gap: 12px; }
+        .sidebar-art-frame { width: 65px; height: 90px; object-fit: contain; filter: drop-shadow(0px 3px 5px rgba(0, 0, 0, 0.5)); }
+        .text-area { flex-grow: 1; overflow: hidden; }
+        .row-header { display: flex; justify-content: space-between; align-items: center; }
+        .item-title { margin: 0; font-size: 0.95rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .size-badge { background-color: #6c757d; padding: 2px 6px; font-size: 0.75rem; font-weight: 700; border-radius: 4px; }
+        .meta-row { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+        .meta-text { color: #6c757d; font-family: monospace; font-size: 0.8rem; }
+        .slot-indicator { background-color: #111416; color: #6c757d; padding: 2px 6px; font-size: 0.75rem; border-radius: 4px; font-family: monospace; }
+
+        /* Selection Card Status Highlights */
         .border-slot-a { border-left: 6px solid #E31B23 !important; }
         .border-slot-b { border-left: 6px solid #FF6A00 !important; }
-        
-        .slot-art-frame { width: 85px; max-height: 115px; object-fit: contain; background: transparent; filter: drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.6)); }
-        .sidebar-art-frame { width: 70px; max-height: 95px; object-fit: contain; background: transparent; filter: drop-shadow(0px 3px 5px rgba(0, 0, 0, 0.6)); }
+        .bg-nes-red { background-color: #E31B23 !important; color: white !important; }
+        .bg-gamepad-gray { background-color: #FF6A00 !important; color: white !important; }
 
-        .retro-select { background-color: #1a1d20 !important; border: 1px solid #2d3238 !important; color: #dee2e6 !important; padding: .25rem .5rem; font-size: .875rem; border-radius: .25rem; }
-        .btn-sm { padding: .25rem .5rem; font-size: .875rem; border-radius: .25rem; border: none; cursor: pointer; }
-        .border-top { border-top: 1px solid rgba(108,117,125,.25) !important; }
-        .w-100 { width: 100% !important; } .mx-0 { margin-right: 0 !important; margin-left: 0 !important; }
-        .col-4 { flex: 0 0 auto; width: 33.33333333%; }
+        /* Dynamic Dual Bay Dashboard Grid */
+        .dashboard-grid { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+        .dashboard-grid > * { flex: 1 0 calc(50% - 12px); min-width: 250px; }
+        .slot-frame { display: flex; align-items: center; gap: 16px; min-height: 110px; }
+        .slot-art-frame { width: 75px; height: 100px; object-fit: contain; filter: drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.5)); }
+        .slot-meta-label { font-family: monospace; font-size: 0.8rem; text-uppercase: true; display: block; }
+        .slot-title { margin: 4px 0; font-size: 1.2rem; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .slot-desc { color: #6c757d; font-size: 0.85rem; margin: 0; }
 
-        @media (max-width: 767.98px) {
-            #payload-pool-wrapper { max-height: none !important; overflow-y: visible !important; }
-            .sidebar-art-frame { width: 50px; max-height: 70px; }
-            #pixel-matrix-rail { grid-template-columns: repeat(24, 1fr); gap: 2px; padding: 8px !important; }
-        }
+        /* Active Pixel Matrix Area */
+        .matrix-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .matrix-title { margin: 0; font-size: 1.1rem; color: #6c757d; }
+        .diff-badge { background-color: #000; padding: 6px 12px; border: 1px solid rgba(108,117,125,0.4); border-radius: 4px; font-size: 0.85rem; }
+        .text-warning { color: #ffc107; font-weight: bold; }
+
+        #pixel-matrix-rail { display: grid; grid-template-columns: repeat(24, 1fr); gap: 4px; background-color: #000; padding: 12px; border-radius: 6px; }
+        @media (min-width: 992px) { #pixel-matrix-rail { grid-template-columns: repeat(29, 1fr); gap: 6px; padding: 16px; } }
+
+        .memory-cell { aspect-ratio: 1/1; background-color: rgba(255, 255, 255, 0.06); border-radius: 1px; }
+        .memory-cell.slot-a-color { background-color: #E31B23 !important; }
+        .memory-cell.slot-b-color { background-color: #FF6A00 !important; }
+
+        /* Footer Color Code Row */
+        .legend-row { display: flex; justify-content: space-between; margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(108,117,125,0.2); font-size: 0.85rem; }
+        .legend-item { display: flex; align-items: center; gap: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
     </style>
 </head>
 <body>
-    <div class="container-fluid my-4 px-md-5">
-    <div class="text-center mb-4">
-        <h1 class="display-5 fw-bold text-light mb-4" style="font-size: calc(1.425rem + 2.1vw);">NES System Bus & Memory Allocation Matrix</h1>
-        <p class="lead text-muted mb-5" style="font-size: 1.25rem;">
+    <div class="main-container">
+    <div class="text-center">
+        <h1 class="page-title">NES System Bus & Memory Allocation Matrix</h1>
+        <p class="page-summary">
             Analyze how custom mapper chips expand the standard 64KB CPU address space via dynamic bank allocation. 
             The sector rail projects physical memory footprints in real-time. Game A loads data structures using 
             <span style="color: #E31B23; font-weight: bold;">Red</span> sectors, Game B flags address offsets using 
@@ -107,13 +101,13 @@
         </p>
     </div>
 
-    <div class="row g-3 g-md-4 flex-column-reverse flex-md-row">
-        <!-- LEFT COLUMN: SIDEBAR LIST MATRIX ENGINE -->
-        <div class="col-lg-4 col-md-5">
-            <div class="card p-3 mb-2 bg-dark border-secondary border-opacity-25 rounded shadow-sm">
-                <label for="retro-sort-dropdown" class="font-monospace mb-2" style="color: #6c757d; font-size: .875em; text-uppercase: true; display: block;">Bus Matrix Sorting Engine</label>
-                <div class="d-flex gap-2">
-                    <select id="retro-sort-dropdown" class="retro-select font-monospace flex-grow-1">
+    <div class="workspace-layout">
+        <!-- LEFT SIDEBAR: LIST SETTINGS -->
+        <div class="left-sidebar">
+            <div class="custom-card">
+                <label for="retro-sort-dropdown" class="engine-label">Bus Matrix Sorting Engine</label>
+                <div class="filter-flex">
+                    <select id="retro-sort-dropdown" class="retro-select">
                         <option value="release">Release Date (Oldest)</option>
                         <option value="release-desc">Release Date (Newest)</option>
                         <option value="alpha">Alphabetical (A-Z)</option>
@@ -121,67 +115,65 @@
                         <option value="size-desc">Memory Size (Largest)</option>
                         <option value="chip">Memory Chip Type</option>
                     </select>
-                    <button type="button" id="clear-selection-btn" class="btn-sm font-monospace text-white" style="background-color: #E31B23; border: 1px solid #b31218;">Reset</button>
+                    <button type="button" id="clear-selection-btn" class="reset-btn">Reset</button>
                 </div>
             </div>
             
-            <div class="list-group shadow-sm rounded border-0" id="payload-pool-wrapper">
-                <div class="text-center p-4 text-muted card bg-dark border-secondary border-opacity-25 font-monospace" style="font-size: .875em;">
+            <div id="payload-pool-wrapper">
+                <div class="custom-card font-monospace text-center" style="font-size: 0.85rem; color: #6c757d;">
                     Connecting to Render Engine Cloud Pipeline...
                 </div>
             </div>
         </div>
-        <!-- RIGHT COLUMN: CHOSEN SLOTS AND VISUAL MATRIX CANVAS -->
-        <div class="col-lg-8 col-md-7">
-            <div class="row g-2 mb-3" style="margin-bottom: 1rem !important;">
-                <!-- Slot A Dashboard -->
-                <div class="col-md-6">
-                    <div class="card p-3 bg-dark rounded border-slot-a shadow-sm" style="min-height: 135px; border: none;">
-                        <div class="d-flex align-items-center gap-3 h-100">
-                            <img src="https://placehold.co" id="slot-a-img" class="rounded slot-art-frame d-none" alt="">
-                            <div class="flex-grow-1 overflow-hidden">
-                                <span class="font-monospace text-uppercase" style="color: #E31B23; font-size: .875em; display: block;">[ Game A Cartridge ]</span>
-                                <h5 class="m-0 text-white text-truncate mt-1" id="slot-a-title" style="margin: 0; font-size: 1.25rem;">--- Empty ---</h5>
-                                <small class="text-muted d-block mt-1" id="slot-a-meta" style="display: block; margin-top: .25rem;">Select a game on the left</small>
-                            </div>
+
+        <!-- RIGHT PANEL: MEMORY VISUALIZATION GRID -->
+        <div class="right-matrix-panel">
+            <div class="dashboard-grid">
+                <!-- Slot A -->
+                <div class="custom-card border-slot-a">
+                    <div class="slot-frame">
+                        <img src="data:image/svg+xml;utf8,<svg xmlns='http://w3.org' width='75' height='100'></svg>" id="slot-a-img" class="slot-art-frame d-none" alt="">
+                        <div class="text-area">
+                            <span class="slot-meta-label" style="color: #E31B23;">[ Game A Cartridge ]</span>
+                            <h5 class="slot-title" id="slot-a-title">--- Empty ---</h5>
+                            <p class="slot-desc" id="slot-a-meta">Select a game on the left</p>
                         </div>
                     </div>
                 </div>
-                <!-- Slot B Dashboard -->
-                <div class="col-md-6">
-                    <div class="card p-3 bg-dark rounded border-slot-b shadow-sm" style="min-height: 135px; border: none;">
-                        <div class="d-flex align-items-center gap-3 h-100">
-                            <img src="https://placehold.co" id="slot-b-img" class="rounded slot-art-frame d-none" alt="">
-                            <div class="flex-grow-1 overflow-hidden">
-                                <span class="font-monospace text-uppercase" style="color: #9FA1A4; font-size: .875em; display: block;">[ Game B Cartridge ]</span>
-                                <h5 class="m-0 text-white text-truncate mt-1" id="slot-b-title" style="margin: 0; font-size: 1.25rem;">--- Empty ---</h5>
-                                <small class="text-muted d-block mt-1" id="slot-b-meta" style="display: block; margin-top: .25rem;">Select a game on the left</small>
-                            </div>
+                <!-- Slot B -->
+                <div class="custom-card border-slot-b">
+                    <div class="slot-frame">
+                        <img src="data:image/svg+xml;utf8,<svg xmlns='http://w3.org' width='75' height='100'></svg>" id="slot-b-img" class="slot-art-frame d-none" alt="">
+                        <div class="text-area">
+                            <span class="slot-meta-label" style="color: #9FA1A4;">[ Game B Cartridge ]</span>
+                            <h5 class="slot-title" id="slot-b-title">--- Empty ---</h5>
+                            <p class="slot-desc" id="slot-b-meta">Select a game on the left</p>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="card p-3 p-md-4 shadow-sm border-secondary border-opacity-25 bg-body-tertiary" style="border: none;">
-                <div class="d-flex justify-content-between align-items-center mb-3 w-100 flex-wrap gap-2" style="margin-bottom: 1rem !important;">
-                    <h5 class="m-0 text-muted" style="margin: 0; font-size: 1.25rem;">Visual Size Comparison (in KB)</h5>
-                    <div class="badge bg-black px-3 py-2 text-white border border-secondary border-opacity-50" style="padding: .5rem 1rem !important; border: 1px solid rgba(108,117,125,.5) !important;">
-                        Difference: <span class="text-warning fw-bold" id="live-difference-readout">0 KB</span>
+
+            <!-- Memory Allocation Grid Card -->
+            <div class="custom-card bg-body-tertiary">
+                <div class="matrix-header-row">
+                    <h5 class="matrix-title">Visual Size Comparison (in KB)</h5>
+                    <div class="diff-badge">
+                        Difference: <span class="text-warning" id="live-difference-readout">0 KB</span>
                     </div>
                 </div>
 
-                <div id="pixel-matrix-rail">
-                    <!-- Javascript anchors append memory block squares seamlessly here -->
-                </div>
+                <div id="pixel-matrix-rail"></div>
                 
-                <div class="row mt-3 pt-2 border-top border-secondary border-opacity-25 text-center g-2 small w-100 mx-0">
-                    <div class="col-4 text-start text-truncate"><span class="d-inline-block rounded-1 me-1" style="width:10px; height:10px; background:rgba(255,255,255,0.08); border-radius: .25rem; display: inline-block; margin-right: .25rem;"></span> <span class="text-muted">Empty</span></div>
-                    <div class="col-4 text-start text-truncate"><span class="d-inline-block rounded-1 me-1" style="width:10px; height:10px; background:#E31B23; border-radius: .25rem; display: inline-block; margin-right: .25rem;"></span> <span style="color: #E31B23;">Game A</span></div>
-                    <div class="col-4 text-start text-truncate"><span class="d-inline-block rounded-1 me-1" style="width:10px; height:10px; background:#545759; border-radius: .25rem; display: inline-block; margin-right: .25rem;"></span> <span style="color: #9FA1A4;">Game B</span></div>
+                <div class="legend-row">
+                    <div class="legend-item"><span class="legend-dot" style="background: rgba(255,255,255,0.06);"></span> <span style="color: #6c757d;">Empty</span></div>
+                    <div class="legend-item"><span class="legend-dot" style="background: #E31B23;"></span> <span style="color: #E31B23;">Game A</span></div>
+                    <div class="legend-item"><span class="legend-dot" style="background: #545759;"></span> <span style="color: #9FA1A4;">Game B</span></div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const wrapper = document.getElementById("payload-pool-wrapper");
@@ -194,47 +186,101 @@
 
         for (let i = 1; i <= 768; i++) {
             const cell = document.createElement("div"); cell.className = "memory-cell";
-            cell.setAttribute("data-index", i); cell.id = `cell-${i}`; matrixRail.appendChild(cell);
+            cell.setAttribute("data-index", i); cell.id = "cell-" + i; matrixRail.appendChild(cell);
         }
         cells = document.querySelectorAll(".memory-cell");
 
         // CRITICAL DEPLOYMENT STEP: Overwrite this placeholder with your exact live Render endpoint string!
-        const RENDER_API_ENDPOINT = "https://nes-memory.onrender.com";
+        const RENDER_API_ENDPOINT = "https://nes-memory.onrender.com/Grid";
 
         fetch(RENDER_API_ENDPOINT)
-            .then(res => { if (!res.ok) throw new Error(`HTTP Error Status: ${res.status}`); return res.json(); })
-            .then(data => { buildSidebarInterfaceRows(data); sortDropdown.dispatchEvent(new Event('change')); })
-            .catch(err => { wrapper.innerHTML = `<div class="card bg-dark p-3 text-danger font-monospace small">⚠️ CLOUD FETCH FAILURE: ${err.message}</div>`; });
+            .then(res => { if (!res.ok) throw new Error("HTTP Status Error: " + res.status); return res.json(); })
+            .then(data => { 
+                console.log("Raw API Data Item:", data); 
+                buildSidebarInterfaceRows(data); 
+                sortDropdown.dispatchEvent(new Event('change')); 
+            })
+            .catch(err => { wrapper.innerHTML = "<div class=\"custom-card text-danger font-monospace\" style=\"font-size:0.85rem;\">⚠️ CLOUD FETCH FAILURE: " + err.message + "</div>"; });
 
+        // CASE-INSENSITIVE HASH CLEANER: Extracts only the core character hash (e.g. "co3u7r")
+        function cleanAndBuildIgbdUrl(itemRecord) {
+            const g = itemRecord.igdbData || {};
+            
+            let rawData = itemRecord.imageId || itemRecord.image_id || itemRecord.ImageId ||
+                          g.cover?.value?.imageId || g.cover?.Value?.ImageId || 
+                          g.cover?.value?.image_id || g.cover?.Value?.image_id ||
+                          g.cover?.imageId || g.cover?.ImageId || g.cover?.image_id ||
+                          g.cover?.id || g.cover?.Id || g.cover;
+            
+            if (rawData && typeof rawData === 'object') {
+                rawData = rawData.imageId || rawData.ImageId || rawData.image_id || rawData.id || rawData.Id || "";
+            }
+            
+            let dataStr = String(rawData).trim();
+            
+            if (dataStr.toLowerCase().indexOf("igdb.com") !== -1) {
+                dataStr = dataStr.replace(/https:/gi, "")
+                                 .replace(/http:/gi, "")
+                                 .replace(/images\./gi, "")
+                                 .replace(/igdb\.com/gi, "")
+                                 .replace(/\.jpg/gi, "")
+                                 .replace(/\//g, ""); // Strips every forward slash
+            }
+            
+            if (dataStr && dataStr.length > 0 && dataStr !== "null" && dataStr !== "undefined" && dataStr !== "[object Object]") {
+                return "https://igdb.com" + dataStr + ".jpg";
+            }
+            return "https://placehold.co";
+        }
         function buildSidebarInterfaceRows(gamesList) {
             wrapper.innerHTML = "";
-            gamesList.forEach(item => {
-                const imgUrl = item.igdbData?.cover?.value?.imageId
-                    ? `https://igdb.com{item.igdbData.cover.value.imageId}.jpg`
+            const dynamicList = Array.isArray(gamesList) ? gamesList : [gamesList];
+            
+            dynamicList.forEach(item => {
+                const g = item.igdbData || {};
+                
+                // 1. Extract the raw hash token directly from any field available
+                let rawHash = item.imageId || item.image_id || g.cover?.value?.imageId || g.cover?.imageId || g.cover?.image_id || g.cover?.id || "";
+                if (rawHash && typeof rawHash === 'object') {
+                    rawHash = rawHash.imageId || rawHash.image_id || rawHash.id || "";
+                }
+                
+                let hashStr = String(rawHash).trim()
+                                             .replace(/https:\/\/igdb\.com/gi, "")
+                                             .replace(/http:\/\/igdb\.com/gi, "")
+                                             .replace(/igdb\.com/gi, "")
+                                             .replace(/\.jpg/gi, "")
+                                             .replace(/\//g, "");
+
+                // 2. FORCE THE CORRECT CDN URL: If a valid hash exists, build the working ://igdb.com link
+                const imgUrl = (hashStr && hashStr.length > 0 && hashStr !== "null" && hashStr !== "undefined" && hashStr !== "[object Object]")
+                    ? "https://://igdb.com/igdb/image/upload/t_cover_big/" + hashStr + ".jpg"
                     : "https://placehold.co";
 
-                const buttonRowHtml = `
-                    <div class="card p-3 game-select-btn mb-1 bg-dark text-white shadow-sm" style="margin-bottom: .25rem !important;"
-                         data-size="${item.sizeInKb}" data-name="${item.igdbData.name}"
-                         data-chip="${item.mapperChip}" data-year="${item.releaseYear}" data-img="${imgUrl}">
-                        <div class="d-flex align-items-center gap-3">
-                            <img src="${imgUrl}" alt="" class="rounded sidebar-art-frame">
-                            <div class="flex-grow-1 overflow-hidden">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h6 class="mb-0 fw-bold item-title text-truncate" style="margin: 0; font-size: 1rem;">${item.igdbData.name}</h6>
-                                    <span class="badge bg-secondary opacity-75 ms-1">${item.sizeInKb}K</span>
-                                </div>
-                                <div class="d-flex justify-content-between align-items-center mt-2">
-                                    <small class="text-muted text-truncate font-monospace small">${item.mapperChip} | ${item.releaseYear}</small>
-                                    <span class="slot-indicator badge bg-black text-muted font-monospace small" style="font-size: .75em;">Idle</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>`;
+                // 3. ASSEMBLE LAYOUT USING STRINGS ONLY (Zero Backticks)
+                var buttonRowHtml = "";
+                buttonRowHtml += "<div class=\"game-select-btn\" data-size=\"" + item.sizeInKb + "\" data-name=\"" + (g.name || '') + "\" ";
+                buttonRowHtml += "data-chip=\"" + item.mapperChip + "\" data-year=\"" + item.releaseYear + "\" data-img=\"" + imgUrl + "\">";
+                buttonRowHtml += "  <div class=\"item-flex\">";
+                buttonRowHtml += "    <img src=\"" + imgUrl + "\" alt=\"\" class=\"sidebar-art-frame\">";
+                buttonRowHtml += "    <div class=\"text-area\">";
+                buttonRowHtml += "      <div class=\"row-header\">";
+                buttonRowHtml += "        <h6 class=\"item-title\">" + (g.name || '') + "</h6>";
+                buttonRowHtml += "        <span class=\"size-badge\">" + item.sizeInKb + "K</span>";
+                buttonRowHtml += "      </div>";
+                buttonRowHtml += "      <div class=\"meta-row\">";
+                buttonRowHtml += "        <small class=\"meta-text\">" + item.mapperChip + " | " + item.releaseYear + "</small>";
+                buttonRowHtml += "        <span class=\"slot-indicator\">Idle</span>";
+                buttonRowHtml += "      </div>";
+                buttonRowHtml += "    </div>";
+                buttonRowHtml += "  </div>";
+                buttonRowHtml += "</div>";
+
                 wrapper.insertAdjacentHTML('beforeend', buttonRowHtml);
             });
             initClickEvents();
         }
+
         function initClickEvents() {
             const itemButtons = Array.from(wrapper.querySelectorAll(".game-select-btn"));
             itemButtons.forEach(btn => {
@@ -245,17 +291,16 @@
 
                     if (slotA && slotA.name === name) { slotA = null; clearButtonState(this); } 
                     else if (slotB && slotB.name === name) { slotB = null; clearButtonState(this); } 
-                    else if (!slotA) { slotA = currentData; setButtonState(this, "A", "bg-nes-red text-white border-slot-a"); } 
-                    else if (!slotB) { slotB = currentData; setButtonState(this, "B", "bg-gamepad-gray text-dark border-slot-b"); } 
+                    else if (!slotA) { slotA = currentData; setButtonState(this, "A", "bg-nes-red border-slot-a"); } 
+                    else if (!slotB) { slotB = currentData; setButtonState(this, "B", "bg-gamepad-gray border-slot-b"); } 
                     else {
-                        clearButtonState(slotA.element); slotA = slotB; setButtonState(slotA.element, "A", "bg-nes-red text-white border-slot-a");
+                        clearButtonState(slotA.element); slotA = slotB; setButtonState(slotA.element, "A", "bg-nes-red border-slot-a");
                         slotB = currentData; setButtonState(this, "B", "bg-gamepad-gray text-dark border-slot-b");
                     }
                     updateDashboards(); renderMapMatrix();
                 });
             });
         }
-
         sortDropdown.addEventListener("change", function () {
             const items = Array.from(wrapper.querySelectorAll(".game-select-btn")); if(!items.length) return;
             const sortCriteria = this.value;
@@ -289,8 +334,6 @@
             initClickEvents();
         });
 
-        setTimeout(() => { sortDropdown.dispatchEvent(new Event('change')); }, 50);
-
         clearBtn.addEventListener("click", function() {
             if(slotA) clearButtonState(slotA.element); if(slotB) clearButtonState(slotB.element);
             slotA = null; slotB = null; const items = wrapper.querySelectorAll(".game-select-btn");
@@ -298,29 +341,27 @@
         });
 
         function setButtonState(el, slotLabel, classes) {
-            el.classList.remove("bg-dark", "text-white", "bg-gamepad-gray", "text-dark", "border-slot-a", "bg-nes-red", "text-white", "border-slot-b");
-            el.className += ` ${classes}`; const indicator = el.querySelector(".slot-indicator"); indicator.innerText = `Slot ${slotLabel}`;
-            indicator.classList.replace("bg-black", "bg-white"); indicator.classList.replace("text-muted", "text-black");
+            el.className = "game-select-btn " + classes; const indicator = el.querySelector(".slot-indicator"); indicator.innerText = "Slot " + slotLabel;
+            indicator.style.backgroundColor = "white"; indicator.style.color = "black";
         }
 
         function clearButtonState(el) {
-            if (!el) return; el.classList.remove("bg-gamepad-gray", "text-dark", "border-slot-a", "bg-nes-red", "text-white", "border-slot-b");
-            el.className += " bg-dark text-white"; const indicator = el.querySelector(".slot-indicator"); indicator.innerText = "Idle";
-            indicator.className = "slot-indicator badge bg-black text-muted font-monospace small";
+            if (!el) return; el.className = "game-select-btn"; const indicator = el.querySelector(".slot-indicator"); indicator.innerText = "Idle";
+            indicator.style.backgroundColor = "#111416"; indicator.style.color = "#6c757d";
         }
 
         function updateDashboards() {
             const titleA = document.getElementById("slot-a-title"), metaA = document.getElementById("slot-a-meta"), imgA = document.getElementById("slot-a-img");
-            if (slotA) { titleA.innerText = slotA.name; metaA.innerText = `${slotA.size} KB | ${slotA.chip} | ${slotA.year}`; imgA.src = slotA.img; imgA.classList.remove("d-none"); } 
+            if (slotA) { titleA.innerText = slotA.name; metaA.innerText = slotA.size + " KB | " + slotA.chip + " | " + slotA.year; imgA.src = slotA.img; imgA.classList.remove("d-none"); } 
             else { titleA.innerText = "--- Empty ---"; metaA.innerText = "Select a game on the left"; imgA.classList.add("d-none"); imgA.src = ""; }
             const titleB = document.getElementById("slot-b-title"), metaB = document.getElementById("slot-b-meta"), imgB = document.getElementById("slot-b-img");
-            if (slotB) { titleB.innerText = slotB.name; metaB.innerText = `${slotB.size} KB | ${slotB.chip} | ${slotB.year}`; imgB.src = slotB.img; imgB.classList.remove("d-none"); } 
+            if (slotB) { titleB.innerText = slotB.name; metaB.innerText = slotB.size + " KB | " + slotB.chip + " | " + slotB.year; imgB.src = slotB.img; imgB.classList.remove("d-none"); } 
             else { titleB.innerText = "--- Empty ---"; metaB.innerText = "Select a game on the left"; imgB.classList.add("d-none"); imgB.src = ""; }
         }
 
         function renderMapMatrix() {
             const sizeA = slotA ? slotA.size : 0, sizeB = slotB ? slotB.size : 0, deltaSize = Math.abs(sizeA - sizeB);
-            diffReadout.innerText = (sizeA > 0 && sizeB > 0) ? `A: ${sizeA}K | B: ${sizeB}K (${deltaSize}K Difference)` : (sizeA > 0 || sizeB > 0) ? `${Math.max(sizeA, sizeB)} KB Loaded` : "0 KB";
+            diffReadout.innerText = (sizeA > 0 && sizeB > 0) ? "A: " + sizeA + "K | B: " + sizeB + "K (" + deltaSize + "K Difference)" : (sizeA > 0 || sizeB > 0) ? Math.max(sizeA, sizeB) + " KB Loaded" : "0 KB";
             cells.forEach(cell => {
                 const idx = parseInt(cell.getAttribute("data-index")); cell.classList.remove("slot-a-color", "slot-b-color");
                 const trackingA = (idx <= sizeA), trackingB = (idx <= sizeB);
