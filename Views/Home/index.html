@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NES System Bus & Memory Allocation Matrix</title>
+    
+    <!-- BOOTSTRAP CDN: Restores standard structural class frameworks natively -->
+    <link href="https://jsdelivr.net" rel="stylesheet">
+    
+    <!-- FONTS CDN: Loads the modern Poppins typography engine cleanly -->
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* TYPOGRAPHY OVERRIDE: Enforces Poppins globally while shielding engineering terminal fonts */
+        body, :not(.font-monospace):not(small):not(.slot-indicator):not(.badge) {
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+        }
+
+        /* Desktop Grid Configuration: 29 columns creates the block matrix effect */
+        #pixel-matrix-rail {
+            display: grid;
+            grid-template-columns: repeat(29, 1fr); 
+            gap: 6px; 
+            background-color: #000000;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        /* Calibrated Desktop Sidebar Scrolling Constraint */
+        #payload-pool-wrapper {
+            max-height: 895px; 
+            overflow-y: auto;
+            padding-right: 4px; 
+        }
+
+        /* Custom Retro Scrollbar Styling for Webkit Browsers */
+        #payload-pool-wrapper::-webkit-scrollbar {
+            width: 6px;
+        }
+        #payload-pool-wrapper::-webkit-scrollbar-track {
+            background: #111111;
+            border-radius: 4px;
+        }
+        #payload-pool-wrapper::-webkit-scrollbar-thumb {
+            background: #FF6A00; 
+            border-radius: 4px;
+        }
+        #payload-pool-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #E31B23; 
+        }
+
+        .memory-cell {
+            aspect-ratio: 1 / 1; 
+            background-color: rgba(255, 255, 255, 0.08); 
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            border-radius: 2px;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .memory-cell.slot-a-color {
+            background-color: #E31B23 !important; 
+        }
+
+        .memory-cell.slot-b-color {
+            background-color: #545759 !important; 
+        }
+        .game-select-btn {
+            transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            cursor: pointer;
+            border: 1px solid #2d3238 !important; 
+        }
+        .game-select-btn:hover {
+            transform: translateX(4px);
+        }
+        
+        .bg-nes-red { background-color: #E31B23 !important; }
+        .bg-gamepad-gray { background-color: #545759 !important; }
+        
+        .border-slot-a { border-left: 6px solid #E31B23 !important; }
+        .border-slot-b { border-left: 6px solid #FF6A00 !important; }
+        
+        .slot-art-frame {
+            width: 85px;
+            max-height: 115px; 
+            object-fit: contain; 
+            background: transparent !important;
+            border: none !important;
+            filter: drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.6)); 
+        }
+        .sidebar-art-frame {
+            width: 70px;
+            max-height: 95px; 
+            object-fit: contain; 
+            background: transparent !important;
+            border: none !important;
+            filter: drop-shadow(0px 3px 5px rgba(0, 0, 0, 0.6));
+        }
+
+        .retro-select {
+            background-color: #1a1d20 !important;
+            border: 1px solid #2d3238 !important;
+            color: #dee2e6 !important;
+        }
+        .retro-select:focus {
+            border-color: #E31B23 !important;
+            box-shadow: 0 0 0 0.25rem rgba(227, 27, 35, 0.25) !important;
+        }
+
+        @media (max-width: 767.98px) {
+            .container-fluid {
+                padding-left: 10px !important;
+                padding-right: 10px !important;
+            }
+            #payload-pool-wrapper {
+                max-height: none !important;
+                overflow-y: visible !important;
+                padding-right: 0 !important;
+            }
+            .sidebar-art-frame {
+                width: 50px;
+                max-height: 70px;
+            }
+            .game-select-btn {
+                padding: 10px !important;
+            }
+            .item-title {
+                font-size: 0.95rem !important;
+            }
+            #pixel-matrix-rail {
+                grid-template-columns: repeat(24, 1fr); 
+                gap: 2px;
+                padding: 8px !important;
+                max-height: none !important; 
+            }
+            .memory-cell {
+                width: auto;
+                height: auto;
+                aspect-ratio: 1 / 1;
+            }
+        }
+    </style>
+</head>
+<body class="bg-dark text-white">
+    <div class="container-fluid my-4 px-md-5">
+    <div class="text-center mb-4">
+        <h1 class="display-5 fw-bold text-light fs-2 fs-md-1 mb-4">NES System Bus & Memory Allocation Matrix</h1>
+        <p class="lead text-muted mb-5">
+            Analyze how custom mapper chips expand the standard 64KB CPU address space via dynamic bank allocation. 
+            The sector rail projects physical memory footprints in real-time. Game A loads data structures using 
+            <span style="color: #E31B23; font-weight: bold;">Red</span> sectors, Game B flags address offsets using 
+            <span style="color: #FF6A00; font-weight: bold;">Orange</span> sectors, and shared unbanked memory layers mirror the smaller constraint.
+        </p>
+    </div>
+
+    <div class="row g-3 g-md-4 flex-column-reverse flex-md-row">
+        <!-- LEFT COLUMN: GAME LIST AND SORT FILTERS -->
+        <div class="col-lg-4 col-md-5">
+            <div class="card p-3 mb-2 bg-dark border border-secondary border-opacity-25 rounded shadow-sm">
+                <label for="retro-sort-dropdown" class="form-label text-muted small text-uppercase font-monospace mb-2">Bus Matrix Sorting Engine</label>
+                <div class="d-flex gap-2">
+                    <select id="retro-sort-dropdown" class="form-select form-select-sm retro-select font-monospace">
+                        <option value="release">Release Date (Oldest)</option>
+                        <option value="release-desc">Release Date (Newest)</option>
+                        <option value="alpha">Alphabetical (A-Z)</option>
+                        <option value="size-asc">Memory Size (Smallest)</option>
+                        <option value="size-desc">Memory Size (Largest)</option>
+                        <option value="chip">Memory Chip Type</option>
+                    </select>
+                    <button type="button" id="clear-selection-btn" class="btn btn-sm font-monospace text-white" style="background-color: #E31B23; border: 1px solid #b31218;" title="Reset Slots">Reset</button>
+                </div>
+            </div>
+            
+            <!-- POPULATED BY JAVASCRIPT: Render backend data lines attach dynamically into here -->
+            <div class="list-group shadow-sm rounded border-0" id="payload-pool-wrapper">
+                <div class="text-center p-4 text-muted border border-secondary border-opacity-25 rounded bg-dark font-monospace small shadow-sm">
+                    Connecting to Render Engine Cloud Pipeline...
+                </div>
+            </div>
+        </div>
+        <!-- RIGHT COLUMN: CHOSEN SLOTS AND VISUAL MATRIX GRID -->
+        <div class="col-lg-8 col-md-7">
+            <div class="row g-2 mb-3">
+                <!-- Slot A Dashboard -->
+                <div class="col-12 col-md-6">
+                    <div class="card p-3 border-0 bg-dark rounded border-start border-4 border-slot-a shadow-sm" style="min-height: 135px;">
+                        <div class="d-flex align-items-center gap-3 h-100">
+                            <img src="https://placehold.co" id="slot-a-img" class="rounded slot-art-frame d-none" alt="">
+                            <div class="flex-grow-1 overflow-hidden">
+                                <span class="text-muted small d-block font-monospace text-uppercase" style="color: #E31B23 !important;">[ Game A Cartridge ]</span>
+                                <h5 class="m-0 text-white text-truncate mt-1" id="slot-a-title">--- Empty ---</h5>
+                                <small class="text-muted d-block mt-1" id="slot-a-meta">Select a game on the left</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Slot B Dashboard -->
+                <div class="col-12 col-md-6">
+                    <div class="card p-3 border-0 bg-dark rounded border-start border-4 border-slot-b shadow-sm" style="min-height: 135px;">
+                        <div class="d-flex align-items-center gap-3 h-100">
+                            <img src="https://placehold.co" id="slot-b-img" class="rounded slot-art-frame d-none" alt="">
+                            <div class="flex-grow-1 overflow-hidden">
+                                <span class="text-muted small d-block font-monospace text-uppercase" style="color: #9FA1A4 !important;">[ Game B Cartridge ]</span>
+                                <h5 class="m-0 text-white text-truncate mt-1" id="slot-b-title">--- Empty ---</h5>
+                                <small class="text-muted d-block mt-1" id="slot-b-meta">Select a game on the left</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card p-3 p-md-4 shadow-sm border border-secondary border-opacity-25 bg-body-tertiary">
+                <div class="d-flex justify-content-between align-items-center mb-3 w-100 flex-wrap gap-2">
+                    <h5 class="m-0 text-muted fs-6 fs-md-5">Visual Size Comparison (in KB)</h5>
+                    <div class="badge bg-black px-3 py-2 text-white border border-secondary border-opacity-50 small">
+                        Difference: <span class="text-warning fw-bold" id="live-difference-readout">0 KB</span>
+                    </div>
+                </div>
+
+                <div id="pixel-matrix-rail">
+                    <!-- Javascript hooks inject individual block indicators into this wrapper frame -->
+                </div>
+                
+                <div class="row mt-3 pt-2 border-top border-secondary border-opacity-25 text-center g-2 small w-100 mx-0">
+                    <div class="col-4 text-start text-truncate"><span class="d-inline-block rounded-1 me-1" style="width:10px; height:10px; background:rgba(255,255,255,0.08);"></span> <span class="text-muted">Empty</span></div>
+                    <div class="col-4 text-start text-truncate"><span class="d-inline-block rounded-1 me-1" style="width:10px; height:10px; background:#E31B23;"></span> <span style="color: #E31B23;">Game A</span></div>
+                    <div class="col-4 text-start text-truncate"><span class="d-inline-block rounded-1 me-1" style="width:10px; height:10px; background:#545759;"></span> <span style="color: #9FA1A4;">Game B</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const wrapper = document.getElementById("payload-pool-wrapper");
+        const clearBtn = document.getElementById("clear-selection-btn");
+        const sortDropdown = document.getElementById("retro-sort-dropdown");
+        const matrixRail = document.getElementById("pixel-matrix-rail");
+        const diffReadout = document.getElementById("live-difference-readout");
+
+        let slotA = null;
+        let slotB = null;
+        let cells = [];
+
+        // 1. Generate the 768 matrix grid squares programmatically inside the frontend container
+        for (let i = 1; i <= 768; i++) {
+            const cell = document.createElement("div");
+            cell.className = "memory-cell";
+            cell.setAttribute("data-index", i);
+            cell.id = `cell-${i}`;
+            matrixRail.appendChild(cell);
+        }
+        cells = document.querySelectorAll(".memory-cell");
+
+        // CRITICAL DEPLOYMENT STEP: Replace this string with your exact live Render endpoint address
+        const RENDER_API_ENDPOINT = "https://nes-memory.onrender.com";
+
+        // 2. Fetch live data streams from your Render cloud environment containers
+        fetch(RENDER_API_ENDPOINT)
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP Error Status: ${res.status}`);
+                return res.json();
+            })
+            .then(data => {
+                buildSidebarInterfaceRows(data);
+                sortDropdown.dispatchEvent(new Event('change')); // Trigger chronological sort loops
+            })
+            .catch(err => {
+                wrapper.innerHTML = `<div class="alert alert-danger font-monospace small">⚠️ CLOUD FETCH FAILURE: ${err.message}</div>`;
+            });
+
+        function buildSidebarInterfaceRows(gamesList) {
+            wrapper.innerHTML = "";
+            gamesList.forEach(item => {
+                const imgUrl = item.igdbData?.cover?.value?.imageId
+                    ? `https://igdb.com{item.igdbData.cover.value.imageId}.jpg`
+                    : "https://placehold.co";
+
+                const buttonRowHtml = `
+                    <div class="list-group-item list-group-item-action p-3 game-select-btn mb-1 rounded bg-dark text-white shadow-sm"
+                         data-size="${item.sizeInKb}" data-name="${item.igdbData.name}"
+                         data-chip="${item.mapperChip}" data-year="${item.releaseYear}" data-img="${imgUrl}">
+                        <div class="d-flex align-items-center gap-2 gap-sm-3">
+                            <img src="${imgUrl}" alt="" class="rounded sidebar-art-frame">
+                            <div class="flex-grow-1 overflow-hidden">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0 fw-bold item-title text-truncate">${item.igdbData.name}</h6>
+                                    <span class="badge bg-secondary opacity-75 ms-1">${item.sizeInKb}K</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mt-2">
+                                    <small class="text-muted text-truncate font-monospace small">${item.mapperChip} | ${item.releaseYear}</small>
+                                    <span class="slot-indicator badge bg-dark text-muted font-monospace small">Idle</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                wrapper.insertAdjacentHTML('beforeend', buttonRowHtml);
+            });
+            initClickEvents();
+        }
+
+        function initClickEvents() {
+            const itemButtons = Array.from(wrapper.querySelectorAll(".game-select-btn"));
+            itemButtons.forEach(btn => {
+                btn.addEventListener("click", function () {
+                    const name = this.getAttribute("data-name");
+                    const size = parseInt(this.getAttribute("data-size"));
+                    const chip = this.getAttribute("data-chip");
+                    const year = this.getAttribute("data-year");
+                    const img = this.getAttribute("data-img");
+                    const currentData = { name, size, chip, year, img, element: this };
+
+                    if (slotA && slotA.name === name) { slotA = null; clearButtonState(this); } 
+                    else if (slotB && slotB.name === name) { slotB = null; clearButtonState(this); } 
+                    else if (!slotA) { slotA = currentData; setButtonState(this, "A", "bg-nes-red text-white border-slot-a"); } 
+                    else if (!slotB) { slotB = currentData; setButtonState(this, "B", "bg-gamepad-gray text-dark border-slot-b"); } 
+                    else {
+                        clearButtonState(slotA.element); slotA = slotB;
+                        setButtonState(slotA.element, "A", "bg-nes-red text-white border-slot-a");
+                        slotB = currentData; setButtonState(this, "B", "bg-gamepad-gray text-dark border-slot-b");
+                    }
+                    updateDashboards(); renderMapMatrix();
+                });
+            });
+        }
+        sortDropdown.addEventListener("change", function () {
+            const items = Array.from(wrapper.querySelectorAll(".game-select-btn"));
+            if(!items.length) return;
+            const sortCriteria = this.value;
+
+            items.sort((a, b) => {
+                const nameA = a.getAttribute("data-name");
+                const nameB = b.getAttribute("data-name");
+
+                if (sortCriteria === "release") {
+                    const yearA = parseInt(a.getAttribute("data-year")) || 0;
+                    const yearB = parseInt(b.getAttribute("data-year")) || 0;
+                    if (yearA === yearB) {
+                        if (nameA === "Super Mario Bros.") return -1;
+                        if (nameB === "Super Mario Bros.") return 1;
+                        return nameA.localeCompare(nameB);
+                    }
+                    return yearA - yearB;
+                } 
+                else if (sortCriteria === "release-desc") {
+                    const yearA = parseInt(a.getAttribute("data-year")) || 0;
+                    const yearB = parseInt(b.getAttribute("data-year")) || 0;
+                    if (yearA === yearB) {
+                        if (nameA === "Super Mario Bros.") return -1;
+                        if (nameB === "Super Mario Bros.") return 1;
+                        return nameB.localeCompare(nameA);
+                    }
+                    return yearB - yearA;
+                }
+                else if (sortCriteria === "alpha") {
+                    return nameA.toLowerCase().localeCompare(nameB.toLowerCase());
+                } 
+                else if (sortCriteria === "size-desc") {
+                    const sizeA = parseInt(a.getAttribute("data-size")) || 0;
+                    const sizeB = parseInt(b.getAttribute("data-size")) || 0;
+                    if (sizeA === sizeB) return nameA.localeCompare(nameB);
+                    return sizeB - sizeA;
+                } 
+                else if (sortCriteria === "size-asc") {
+                    const sizeA = parseInt(a.getAttribute("data-size")) || 0;
+                    const sizeB = parseInt(b.getAttribute("data-size")) || 0;
+                    if (sizeA === sizeB) return nameA.localeCompare(nameB);
+                    return sizeA - sizeB;
+                } 
+                else if (sortCriteria === "chip") {
+                    const chipA = (a.getAttribute("data-chip") || "").toLowerCase();
+                    const chipB = (b.getAttribute("data-chip") || "").toLowerCase();
+                    if (chipA === chipB) return nameA.localeCompare(nameB);
+                    return chipA.localeCompare(chipB);
+                }
+                return 0;
+            });
+
+            items.forEach(item => wrapper.appendChild(item));
+            if (slotA) { const foundA = items.find(i => i.getAttribute("data-name") === slotA.name); if (foundA) slotA.element = foundA; }
+            if (slotB) { const foundB = items.find(i => i.getAttribute("data-name") === slotB.name); if (foundB) slotB.element = foundB; }
+            initClickEvents();
+        });
+
+        clearBtn.addEventListener("click", function() {
+            if(slotA) clearButtonState(slotA.element); if(slotB) clearButtonState(slotB.element);
+            slotA = null; slotB = null;
+            const items = wrapper.querySelectorAll(".game-select-btn");
+            items.forEach(item => item.style.removeProperty("display"));
+            updateDashboards(); renderMapMatrix();
+        });
+
+        function setButtonState(el, slotLabel, classes) {
+            el.classList.remove("bg-dark", "text-white", "bg-gamepad-gray", "text-dark", "border-slot-a", "bg-nes-red", "text-white", "border-slot-b");
+            el.className += ` ${classes}`;
+            const indicator = el.querySelector(".slot-indicator");
+            indicator.innerText = `Slot ${slotLabel}`;
+            indicator.classList.replace("bg-dark", "bg-white"); indicator.classList.replace("text-muted", "text-black");
+        }
+
+        function clearButtonState(el) {
+            if (!el) return;
+            el.classList.remove("bg-gamepad-gray", "text-dark", "border-slot-a", "bg-nes-red", "text-white", "border-slot-b");
+            el.className += " bg-dark text-white";
+            const indicator = el.querySelector(".slot-indicator");
+            indicator.innerText = "Idle";
+            indicator.className = "slot-indicator badge bg-dark text-muted font-monospace small";
+        }
+
+        function updateDashboards() {
+            const titleA = document.getElementById("slot-a-title"), metaA = document.getElementById("slot-a-meta"), imgA = document.getElementById("slot-a-img");
+            if (slotA) { titleA.innerText = slotA.name; metaA.innerText = `${slotA.size} KB | ${slotA.chip} | ${slotA.year}`; imgA.src = slotA.img; imgA.classList.remove("d-none"); } 
+            else { titleA.innerText = "--- Empty ---"; metaA.innerText = "Select a game on the left"; imgA.classList.add("d-none"); imgA.src = ""; }
+
+            const titleB = document.getElementById("slot-b-title"), metaB = document.getElementById("slot-b-meta"), imgB = document.getElementById("slot-b-img");
+            if (slotB) { titleB.innerText = slotB.name; metaB.innerText = `${slotB.size} KB | ${slotB.chip} | ${slotB.year}`; imgB.src = slotB.img; imgB.classList.remove("d-none"); } 
+            else { titleB.innerText = "--- Empty ---"; metaB.innerText = "Select a game on the left"; imgB.classList.add("d-none"); imgB.src = ""; }
+        }
+
+        function renderMapMatrix() {
+            const sizeA = slotA ? slotA.size : 0, sizeB = slotB ? slotB.size : 0, deltaSize = Math.abs(sizeA - sizeB);
+            diffReadout.innerText = (sizeA > 0 && sizeB > 0) ? `A: ${sizeA}K | B: ${sizeB}K (${deltaSize}K Difference)` : (sizeA > 0 || sizeB > 0) ? `${Math.max(sizeA, sizeB)} KB Loaded` : "0 KB";
+
+            cells.forEach(cell => {
+                const idx = parseInt(cell.getAttribute("data-index"));
+                cell.classList.remove("slot-a-color", "slot-b-color");
+                const trackingA = (idx <= sizeA), trackingB = (idx <= sizeB);
+                if (trackingA && trackingB) { cell.classList.add(sizeA <= sizeB ? "slot-a-color" : "slot-b-color"); } 
+                else if (trackingA) { cell.classList.add("slot-a-color"); } 
+                else if (trackingB) { cell.classList.add("slot-b-color"); }
+            });
+        }
+    });
+</script>
+</body>
+</html>
