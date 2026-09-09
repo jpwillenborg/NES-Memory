@@ -1,5 +1,6 @@
-# Use the automated Docker mirror path directly to completely bypass Render's parser bug
-FROM dotnet/sdk:10.0 AS build-env
+# 1. SDK BUILD ENVIRONMENT STAGE
+# Pulls official .NET 10.0 SDK container using its permanent system SHA digest identifier
+FROM ://microsoft.com AS build-env
 WORKDIR /app
 
 # Copy project files and restore dependencies explicitly
@@ -10,8 +11,9 @@ RUN dotnet restore
 COPY . ./
 RUN dotnet publish -c Release -o out
 
-# Grab the lightweight runtime container via the mirror hub path
-FROM dotnet/aspnet:10.0
+# 2. RUNTIME ENVIRONMENT STAGE
+# Pulls official .NET 10.0 ASP.NET Runtime container using its permanent system SHA digest identifier
+FROM ://microsoft.com
 WORKDIR /app
 COPY --from=build-env /app/out .
 
