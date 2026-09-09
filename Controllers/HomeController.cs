@@ -61,12 +61,13 @@ namespace NES_Box_Art.Controllers
                 var gridData = processedGames.Select(g => {
                     string gameName = g.Name ?? "";
                     
-                    // FIXED: Establish a standardized baseline DateTime object (Defaulting to Jan 1st of global release year)
+                    // Establish a standardized baseline DateTime object
                     DateTime targetDate = g.FirstReleaseDate.HasValue ? g.FirstReleaseDate.Value.UtcDateTime : new DateTime(1980, 1, 1);
 
-                    // DEEP NORTH AMERICAN MONTH-BASED REGION FILTER
+                    // STRICT NORTH AMERICAN MONTH-BASED REGION FILTER
                     if (g.ReleaseDates?.Values != null && g.ReleaseDates.Values.Any())
                     {
+                        // Target North American text indicators cleanly
                         var naRelease = g.ReleaseDates.Values.FirstOrDefault(r => 
                             r.Human != null && (
                                 r.Human.Contains("North America", StringComparison.OrdinalIgnoreCase) || 
@@ -80,16 +81,16 @@ namespace NES_Box_Art.Controllers
                         }
                     }
 
-                                        // MANUAL NES TIMELINE HISTORIC CORRECTIONS
+                                        // TIMELINE CORRECTIONS (Locks both onto October 18, 1985 US Launch)
                     if (gameName.Equals("Excitebike", StringComparison.OrdinalIgnoreCase) || 
                         gameName.Equals("Super Mario Bros.", StringComparison.OrdinalIgnoreCase))
                     {
                         targetDate = new DateTime(1985, 10, 18);
                     }
 
-                    // FIXED: Packs a sorted prefix code first ("1985-10|Oct 1985")
-                    // This keeps alphabetical sorting 100% accurate down to the month, while embedding the name text!
-                    string preciseDateString = targetDate.ToString("yyyy-MM") + "|" + targetDate.ToString("MMM yyyy");
+                    // FIXED: Formats to upper case "MMM yyyy" (e.g. "OCT 1985").
+                    // Keeps the invisible prefix code ("1985-10") first so chronological sorting stays 100% accurate!
+                    string preciseDateString = targetDate.ToString("yyyy-MM") + "|" + targetDate.ToString("MMM yyyy").ToUpper();
 
                     int sizeKb = 32; string chip = "NROM";
                     if (gameName.Equals("Super Mario Bros.", StringComparison.OrdinalIgnoreCase)) { sizeKb = 40; chip = "NROM"; }
@@ -136,6 +137,7 @@ namespace NES_Box_Art.Controllers
                 ViewBag.Error = $"DATABASE ACCESS EXCEPTION DETECTED: {ex.Message}";
                 return View(new List<TimelineGameViewModel>());
             }
+
 
         }
     }

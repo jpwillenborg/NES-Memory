@@ -399,9 +399,19 @@
                 var name = btn.getAttribute("data-name");
                 var size = parseInt(btn.getAttribute("data-size")) || 0;
                 var chip = btn.getAttribute("data-chip");
-                var year = btn.getAttribute("data-year");
+                var rawYearPayload = btn.getAttribute("data-year") || ""; // Pulls down "1985-10|OCT 1985"
                 var img = btn.getAttribute("data-img");
-                var currentData = { name: name, size: size, chip: chip, year: year, img: img, element: btn };
+
+                // FIXED: Splits the string and extracts index [1] to isolate the clean uppercase text label (e.g., "OCT 1985")
+                var extractedDisplayYear = "Unknown";
+                if (rawYearPayload.includes('|')) {
+                    extractedDisplayYear = rawYearPayload.split('|')[1];
+                } else {
+                    extractedDisplayYear = rawYearPayload;
+                }
+
+                // FIXED: Populates the tracking year with the clear display text so the dashboard cards map cleanly
+                var currentData = { name: name, size: size, chip: chip, year: extractedDisplayYear, element: btn, img: img };
 
                 if (slotA && slotA.name === name) { 
                     slotA = null; 
@@ -413,12 +423,10 @@
                 } 
                 else if (!slotA) { 
                     slotA = currentData; 
-                    // FIXED: Dynamically passes your custom light gray variable into the list button background engine
                     setButtonState(btn, "A", "var(--color-panel-active-bg)", "border-slot-a"); 
                 } 
                 else if (!slotB) { 
                     slotB = currentData; 
-                    // FIXED: Dynamically passes your custom light gray variable into the list button background engine
                     setButtonState(btn, "B", "var(--color-panel-active-bg)", "border-slot-b"); 
                 } 
                 else {
@@ -432,6 +440,78 @@
                 renderMapMatrix();
             });
         }
+
+        sortDropdown.addEventListener("change", function () {
+            var items = Array.from(wrapper.querySelectorAll(".game-select-btn"));
+            if(!items.length) return;
+            var sortCriteria = this.value;
+
+            items.sort(function (a, b) {
+                var nameA = a.getAttribute("data-name") || "";
+                var nameB = b.getAttribute("data-name") || "";
+
+                if (sortCriteria === "release") {
+                    var dateA = a.getAttribute("data-year") || "";
+                    var dateB = b.getAttribute("data-year") || "";
+                    
+                    if (dateA === dateB) {
+                        if (nameA === "Super Mario Bros." && nameB === "Excitebike") return -1;
+                        if (nameA === "Excitebike" && nameB === "Super Mario Bros.") return 1;
+                        return nameA.localeCompare(nameB); 
+                    }
+                    return dateA.localeCompare(dateB);
+                } 
+                else if (sortCriteria === "release-desc") {
+                    var dateA = a.getAttribute("data-year") || "";
+                    var dateB = b.getAttribute("data-year") || "";
+                    
+                    if (dateA === dateB) {
+                        if (nameA === "Super Mario Bros." && nameB === "Excitebike") return 1;
+                        if (nameA === "Excitebike" && nameB === "Super Mario Bros.") return -1;
+                        return nameB.localeCompare(nameA); 
+                    }
+                    return dateB.localeCompare(dateA);
+                }
+                else if (sortCriteria === "alpha") {
+                    return nameA.toLowerCase().localeCompare(nameB.toLowerCase());
+                } 
+                else if (sortCriteria === "size-desc") {
+                    var sizeA = parseInt(a.getAttribute("data-size")) || 0;
+                    var sizeB = parseInt(b.getAttribute("data-size")) || 0;
+                    if (sizeA === sizeB) return nameA.localeCompare(nameB);
+                    return sizeB - sizeA;
+                } 
+                else if (sortCriteria === "size-asc") {
+                    var sizeA = parseInt(a.getAttribute("data-size")) || 0;
+                    var sizeB = parseInt(b.getAttribute("data-size")) || 0;
+                    if (sizeA === sizeB) return nameA.localeCompare(nameB);
+                    return sizeA - sizeB;
+                } 
+                else if (sortCriteria === "chip") {
+                    var chipA = (a.getAttribute("data-chip") || "").toLowerCase();
+                    var chipB = (b.getAttribute("data-chip") || "").toLowerCase();
+                    if (chipA === chipB) return nameA.localeCompare(nameB);
+                    return chipA.localeCompare(chipB);
+                }
+                return 0;
+            });
+
+            items.forEach(function (item) { wrapper.appendChild(item); });
+            if (slotA) { var foundA = items.find(function(i) { return i.getAttribute("data-name") === slotA.name; }); if (foundA) slotA.element = foundA; }
+            if (slotB) { var foundB = items.find(function(i) { return i.getAttribute("data-name") === slotB.name; }); if (foundB) slotB.element = foundB; }
+        });
+
+        clearBtn.addEventListener("click", function() {
+            if(slotA) clearButtonState(slotA.element); 
+            if(slotB) clearButtonState(slotB.element);
+            slotA = null; 
+            slotB = null;
+            var items = wrapper.querySelectorAll(".game-select-btn");
+            items.forEach(function (item) { item.style.removeProperty("display"); });
+            updateDashboards(); 
+            renderMapMatrix();
+        });
+
 
                         sortDropdown.addEventListener("change", function () {
             var items = Array.from(wrapper.querySelectorAll(".game-select-btn"));
@@ -511,12 +591,10 @@
 
 
         
-                function setButtonState(el, slotLabel, themeVar, borderClass) {
+                    function setButtonState(el, slotLabel, themeVar, borderClass) {
             if (!el) return;
             el.className = "list-group-item list-group-item-action p-3 game-select-btn mb-1 rounded text-white shadow-sm " + borderClass;
             el.style.backgroundColor = "var(--color-panel-active-bg)";
-            
-            // A. Update the Cartridge Logic Label States
             var indicator = el.querySelector(".slot-indicator");
             if (indicator) {
                 indicator.innerText = "Cartridge " + slotLabel;
@@ -524,8 +602,6 @@
                 indicator.style.setProperty('color', 'var(--color-badge-active-text)', 'important');
                 indicator.style.fontFamily = "inherit";
             }
-            
-            // B. FIXED: Locate and update the neighboring file Size Badge state properties dynamically
             var sizePill = el.querySelector(".size-badge-pill");
             if (sizePill) {
                 sizePill.style.setProperty('background-color', 'var(--color-size-badge-active-bg)', 'important');
@@ -537,8 +613,6 @@
             if (!el) return;
             el.className = "list-group-item list-group-item-action p-3 game-select-btn mb-1 rounded bg-dark text-white shadow-sm";
             el.style.removeProperty("background-color");
-            
-            // A. Reset Cartridge Status Badge back to idle variables
             var indicator = el.querySelector(".slot-indicator");
             if (indicator) {
                 indicator.innerText = "Idle";
@@ -547,8 +621,6 @@
                 indicator.style.setProperty('color', 'var(--color-badge-idle-text)', 'important');
                 indicator.style.fontFamily = "inherit";
             }
-            
-            // B. FIXED: Reset the neighboring file Size Badge back to idle variables
             var sizePill = el.querySelector(".size-badge-pill");
             if (sizePill) {
                 sizePill.style.setProperty('background-color', 'var(--color-size-badge-idle-bg)', 'important');
@@ -556,11 +628,15 @@
             }
         }
 
+        // FIXED: Dynamically extracts the clean text string straight from the sidebar small label tag
         function updateDashboards() {
             var titleA = document.getElementById("slot-a-title"), metaA = document.getElementById("slot-a-meta"), imgA = document.getElementById("slot-a-img");
-            if (slotA) { 
+            if (slotA && slotA.element) { 
+                var smallTagA = slotA.element.querySelector("small");
+                var displayDateA = smallTagA ? smallTagA.innerText.split('|')[1].trim() : slotA.year;
+
                 titleA.innerText = slotA.name; 
-                metaA.innerText = slotA.size + " KB | " + slotA.chip + " | " + slotA.year; 
+                metaA.innerText = slotA.size + " KB | " + slotA.chip + " | " + displayDateA; 
                 imgA.src = slotA.img; 
                 imgA.classList.remove("d-none"); 
             } 
@@ -572,9 +648,12 @@
             }
 
             var titleB = document.getElementById("slot-b-title"), metaB = document.getElementById("slot-b-meta"), imgB = document.getElementById("slot-b-img");
-            if (slotB) { 
+            if (slotB && slotB.element) { 
+                var smallTagB = slotB.element.querySelector("small");
+                var displayDateB = smallTagB ? smallTagB.innerText.split('|')[1].trim() : slotB.year;
+
                 titleB.innerText = slotB.name; 
-                metaB.innerText = slotB.size + " KB | " + slotB.chip + " | " + slotB.year; 
+                metaB.innerText = slotB.size + " KB | " + slotB.chip + " | " + displayDateB; 
                 imgB.src = slotB.img; 
                 imgB.classList.remove("d-none"); 
             } 
@@ -586,32 +665,20 @@
             }
         }
 
-                function renderMapMatrix() {
+        function renderMapMatrix() {
             var sizeA = slotA ? slotA.size : 0, sizeB = slotB ? slotB.size : 0, deltaSize = Math.abs(sizeA - sizeB);
-            
-            // FIXED: Reformatted the string concatenation template to utilize your clean delta symbol (Δ) layout
             var textReadout = "A: " + sizeA + "K | B: " + sizeB + "K (Δ " + deltaSize + "K)";
-            var altReadout = Math.max(sizeA, sizeB) + " KB Loaded";
-            
             if (diffReadout) {
-                diffReadout.innerHTML = (sizeA > 0 && sizeB > 0) ? textReadout : (sizeA > 0 || sizeB > 0) ? altReadout : "0 KB";
+                diffReadout.innerHTML = (sizeA > 0 && sizeB > 0) ? textReadout : (sizeA > 0 || sizeB > 0) ? Math.max(sizeA, sizeB) + " KB Loaded" : "0 KB";
             }
-            
             cells.forEach(function (cell) {
                 var idx = parseInt(cell.getAttribute("data-index")); 
                 cell.classList.remove("slot-a-color", "slot-b-color");
                 var trackingA = (idx <= sizeA), trackingB = (idx <= sizeB);
-                if (trackingA && trackingB) { 
-                    cell.classList.add(sizeA <= sizeB ? "slot-a-color" : "slot-b-color"); 
-                } 
-                else if (trackingA) { 
-                    cell.classList.add("slot-a-color"); 
-                } 
-                else if (trackingB) { 
-                    cell.classList.add("slot-b-color"); 
-                }
+                if (trackingA && trackingB) { cell.classList.add(sizeA <= sizeB ? "slot-a-color" : "slot-b-color"); } 
+                else if (trackingA) { cell.classList.add("slot-a-color"); } 
+                else if (trackingB) { cell.classList.add("slot-b-color"); }
             });
         }
-
     });
 </script>
