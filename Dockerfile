@@ -2,8 +2,8 @@
 FROM ://microsoft.com AS build-env
 WORKDIR /app
 
-# Copy project files and restore dependencies
-COPY *.csproj ./
+# Copy project files and restore dependencies explicitly
+COPY ./*.csproj ./
 RUN dotnet restore
 
 # Copy the rest of the code and publish a Release build
