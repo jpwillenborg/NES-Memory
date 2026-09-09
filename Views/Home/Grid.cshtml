@@ -10,28 +10,25 @@
 <link href="https://googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-    /* MASTER THEME CONTROL MATRIX: Edit color codes once here to update the entire application */
     :root {
-        --color-theme-a: #e60f00;       /* GAME A: Clear Crimson Red */
-        --color-theme-b: #ff574b;       /* GAME B: Deep Maroon */
-        --color-readout: #FFC107;       /* READOUTS: System Amber Yellow */
-        --color-panel-bg: #2b3035;      /* PANELS: Standard Card Gray */
-        --color-page-bg: #1a1d20;       /* PAGE CANVAS: Main Page Background */
-        --color-scrollbar: #555a60;     /* SCROLLBAR: Thumb Color */
-        --color-reset-btn: #495057;     /* RESET BUTTON: Standard Background */
-        --color-panel-active-bg: #4e545c; /* ACTIVE GAME ROW: Selected List Card Gray */
+        --color-theme-a: #ce0e00;       
+        --color-theme-b: #D4A357;       
+        --color-readout: #b3b6b9  ;       
+        --color-panel-bg: #2b3035;      
+        --color-page-bg: #1a1d20;       
+        --color-scrollbar: #555a60;     
+        --color-reset-btn: #495057;     
+        --color-panel-active-bg: #4e545c; 
         
-        /* 1. CARTRIDGE LOGIC STATUS BADGE VARIABLES */
-        --color-badge-idle-bg: #212529;   
-        --color-badge-idle-text: #6c757d; 
+        --color-badge-idle-bg: #191c1f;   
+        --color-badge-idle-text: #868f97; 
         --color-badge-active-bg: #c5c9cc; 
-        --color-badge-active-text: #1a1d20; 
+        --color-badge-active-text: #24282c; 
 
-        /* 2. FIXED: ADDED SEPARATE CHANNELS FOR FILE SIZE PILLS (IDLE & ACTIVE) */
-        --color-size-badge-idle-bg: #212529;
-        --color-size-badge-idle-text: #adb5bd;
-        --color-size-badge-active-bg: #c5c9cc;   /* Brand new variable: Size background color when active */
-        --color-size-badge-active-text: #1a1d20; /* Brand new variable: Size text color when active */
+        --color-size-badge-idle-bg: #191c1f;
+        --color-size-badge-idle-text: #868f97;
+        --color-size-badge-active-bg: #c5c9cc;
+        --color-size-badge-active-text: #24282c;
     }
 
     body {
@@ -108,8 +105,7 @@
     
     
     
-        /* Enforces the baseline background color across global panel elements */
-    .card, .list-group-item.game-select-btn, .bg-body-tertiary {
+        .card, .list-group-item.game-select-btn, .bg-body-tertiary {
         background-color: var(--color-panel-bg) !important;
         border-top: none !important;
         border-right: none !important;
@@ -117,7 +113,7 @@
         border-left: none; 
     }
     
-    /* FIXED: High-priority selected utility rule allows the active row item to bypass the base card block background */
+    /* High-priority selected utility rule allows the active row item to bypass the base card block background */
     .list-group-item.game-select-btn[style*="background-color"] {
         background-color: var(--color-panel-active-bg) !important;
     }
@@ -174,6 +170,15 @@
         #pixel-matrix-rail { grid-template-columns: repeat(24, 1fr); gap: 2px; padding: 8px !important; max-height: none !important; }
         .memory-cell { width: auto; height: auto; aspect-ratio: 1 / 1; }
         .col-lg-4.col-md-5 { margin-top: calc(1.5rem + 6px) !important; }
+
+        /* FIXED: Forcefully targets the bottom grid legend row elements to scale down on mobile screens only */
+        .card .row.mt-3.pt-2 {
+            font-size: 0.85rem !important;
+        }
+        /* FIXED: Shrinks the square aspect-ratio color block footprints down uniformly on mobile */
+        .card .row.mt-3.pt-2 span.d-inline-block {
+            height: 11px !important;
+        }
     @Html.Raw("}")
 </style>
 
@@ -287,7 +292,7 @@
 
 
 
-                <!-- RIGHT COLUMN: CHOSEN SLOTS AND VISUAL MATRIX GRID -->
+        <!-- RIGHT COLUMN: CHOSEN SLOTS AND VISUAL MATRIX GRID -->
         <div class="col-lg-8 col-md-7">
             <div class="row g-3 mb-4 pb-2" style="--bs-gutter-x: calc(1.5rem + 6px) !important;">
                 <!-- Slot A Dashboard -->
@@ -321,8 +326,7 @@
             <div class="card p-3 p-md-4 shadow-sm bg-body-tertiary">
                 <div class="d-flex justify-content-between align-items-center mb-3 w-100 flex-wrap gap-2">
                     <h5 class="m-0 text-muted fs-6 fs-md-5">Visual Size Comparison (in KB)</h5>
-                    <!-- FIXED: Removed text-white and applied custom color directly to the parent badge wrapper -->
-                    <div class="badge bg-black px-3 py-2 small" style="color: var(--color-readout); font-weight: bold;">
+                    <div class="badge bg-black px-3 py-2 small" style="color: var(--color-readout); font-weight: 500; font-size: 0.9rem;">
                         Difference: <span id="live-difference-readout">0 KB</span>
                     </div>
                 </div>
@@ -334,15 +338,30 @@
                     }
                 </div>
                 
-                <div class="row mt-3 pt-2 border-top border-secondary border-opacity-25 text-center g-2 small w-100 mx-0">
-                    <div class="col-4 text-start text-truncate"><span class="d-inline-block rounded-1 me-1" style="width:10px; height:10px; background:rgba(255,255,255,0.08);"></span> <span class="text-muted">Empty</span></div>
-                    <div class="col-4 text-start text-truncate"><span class="d-inline-block rounded-1 me-1" style="width:10px; height:10px; background: var(--color-theme-a);"></span> <span style="color: var(--color-theme-a);">Game A</span></div>
-                    <div class="col-4 text-start text-truncate"><span class="d-inline-block rounded-1 me-1" style="width:10px; height:10px; background: var(--color-theme-b);"></span> <span style="color: var(--color-theme-b);">Game B</span></div>
+                <!-- FIXED: Re-engineered the color indicator blocks to be slightly larger 14px squares with a forced 1:1 aspect ratio -->
+                <div class="row mt-3 pt-2 border-top border-secondary border-opacity-25 text-center g-2 w-100 mx-0 fs-6 fs-md-5 align-items-center">
+                    <div class="col-4 text-start text-truncate d-flex align-items-center">
+                        <span class="d-inline-block rounded-1 me-2" style="height: 14px; aspect-ratio: 1 / 1; background: rgba(255,255,255,0.08); flex-shrink: 0;"></span>
+                        <span class="text-muted">Empty</span>
+                    </div>
+                    <div class="col-4 text-start text-truncate d-flex align-items-center">
+                        <span class="d-inline-block rounded-1 me-2" style="height: 14px; aspect-ratio: 1 / 1; background: var(--color-theme-a); flex-shrink: 0;"></span>
+                        <span style="color: var(--color-theme-a);">Cartridge A</span>
+                    </div>
+                    <div class="col-4 text-start text-truncate d-flex align-items-center">
+                        <span class="d-inline-block rounded-1 me-2" style="height: 14px; aspect-ratio: 1 / 1; background: var(--color-theme-b); flex-shrink: 0;"></span>
+                        <span style="color: var(--color-theme-b);">Cartridge B</span>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+
+
+
+
 
 
 
@@ -545,10 +564,11 @@
             }
         }
 
-        function renderMapMatrix() {
+                function renderMapMatrix() {
             var sizeA = slotA ? slotA.size : 0, sizeB = slotB ? slotB.size : 0, deltaSize = Math.abs(sizeA - sizeB);
             
-            var textReadout = "A: " + sizeA + "K | B: " + sizeB + "K (" + deltaSize + "K Difference)";
+            // FIXED: Reformatted the string concatenation template to utilize your clean delta symbol (Δ) layout
+            var textReadout = "A: " + sizeA + "K | B: " + sizeB + "K (Δ " + deltaSize + "K)";
             var altReadout = Math.max(sizeA, sizeB) + " KB Loaded";
             
             if (diffReadout) {
@@ -570,5 +590,6 @@
                 }
             });
         }
+
     });
 </script>
