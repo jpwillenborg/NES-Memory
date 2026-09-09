@@ -1,8 +1,5 @@
-# 1. DEFINE REGISTRY AS AN EXPLICIT ARGUMENT UNTIL THE PARSER CLEARING
-ARG REGISTRY=://microsoft.com
-
-# Use the explicitly initialized registry block variables to clear the parser warning
-FROM ${REGISTRY}/dotnet/sdk:10.0 AS build-env
+# Use the automated Docker mirror path directly to completely bypass Render's parser bug
+FROM dotnet/sdk:10.0 AS build-env
 WORKDIR /app
 
 # Copy project files and restore dependencies explicitly
@@ -13,11 +10,10 @@ RUN dotnet restore
 COPY . ./
 RUN dotnet publish -c Release -o out
 
-# 2. REDECLARE THE ARGUMENT FOR THE MULTI-STAGE SCOPE CONTINUATION
-ARG REGISTRY=://microsoft.com
-FROM ${REGISTRY}/dotnet/aspnet:10.0
+# Grab the lightweight runtime container via the mirror hub path
+FROM dotnet/aspnet:10.0
 WORKDIR /app
 COPY --from=build-env /app/out .
 
-# FIXED: Changed 'NES_Box_Art.dll' to match your exact file name with spaces
+# Run your app executable utilizing your exact project name with spaces
 ENTRYPOINT ["dotnet", "NES Box Art.dll"]
