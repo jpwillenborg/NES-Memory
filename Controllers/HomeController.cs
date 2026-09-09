@@ -34,22 +34,22 @@ namespace NES_Box_Art.Controllers
 
             if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
             {
-                ViewBag.Error = "SECRETS READING DEFICIENCY: The configuration engine cannot find your ClientId or ClientSecret from your user-secrets storage vault. Try checking your keys mapping structure inside the terminal.";
+                ViewBag.Error = "SECRETS READING DEFICIENCY: The configuration engine cannot find your ClientId or ClientSecret from your user-secrets storage vault.";
                 return View(new List<TimelineGameViewModel>());
             }
 
-            // Launch the native client package instance smoothly
             var localIgdbClient = new IGDBClient(clientId, clientSecret);
             string gameNamesQuery = string.Join(", ", gameList.Select(name => $"\"{name}\""));
+            
+            // EXTENDED API QUERY: Explicitly pulls deep release date properties for month/day parsing
             string query = "fields name, cover.*, first_release_date, release_dates.*; " +
                            $"where name = ({gameNamesQuery}) & platforms = (18) & cover != null; " +
                            "limit 50;";
-            try
+                        try
             {
                 var igdbGames = await localIgdbClient.QueryAsync<IGDB.Models.Game>(IGDBClient.Endpoints.Games, query);
                 var processedGames = igdbGames.ToList();
 
-                // Dynamic Blue Nintendo Tetris Priority Filter
                 var tetrisVariants = processedGames.Where(g => g.Name?.Equals("Tetris", StringComparison.OrdinalIgnoreCase) == true).ToList();
                 if (tetrisVariants.Count > 1)
                 {
@@ -60,9 +60,11 @@ namespace NES_Box_Art.Controllers
 
                 var gridData = processedGames.Select(g => {
                     string gameName = g.Name ?? "";
-                    string year = "Unknown";
+                    
+                    // FIXED: Establish a standardized baseline DateTime object (Defaulting to Jan 1st of global release year)
+                    DateTime targetDate = g.FirstReleaseDate.HasValue ? g.FirstReleaseDate.Value.UtcDateTime : new DateTime(1980, 1, 1);
 
-                    // DYNAMIC REGION FILTERING
+                    // DEEP NORTH AMERICAN MONTH-BASED REGION FILTER
                     if (g.ReleaseDates?.Values != null && g.ReleaseDates.Values.Any())
                     {
                         var naRelease = g.ReleaseDates.Values.FirstOrDefault(r => 
@@ -72,23 +74,22 @@ namespace NES_Box_Art.Controllers
                             )
                         );
 
-                        if (naRelease != null && naRelease.Year.HasValue)
+                        if (naRelease != null && naRelease.Date.HasValue)
                         {
-                            year = naRelease.Year.Value.ToString();
+                            targetDate = naRelease.Date.Value.UtcDateTime;
                         }
                     }
 
-                    // Fallback block: If no distinct NA entry matches, use the global launch calendar date
-                    if (year == "Unknown" && g.FirstReleaseDate.HasValue)
+                                        // MANUAL NES TIMELINE HISTORIC CORRECTIONS
+                    if (gameName.Equals("Excitebike", StringComparison.OrdinalIgnoreCase) || 
+                        gameName.Equals("Super Mario Bros.", StringComparison.OrdinalIgnoreCase))
                     {
-                        year = g.FirstReleaseDate.Value.Year.ToString();
+                        targetDate = new DateTime(1985, 10, 18);
                     }
 
-                    // HARDENED FIX: Forces Excitebike to overwrite cached global 1984 dates with its correct 1985 US timeline
-                    if (gameName.Equals("Excitebike", StringComparison.OrdinalIgnoreCase))
-                    {
-                        year = "1985";
-                    }
+                    // FIXED: Packs a sorted prefix code first ("1985-10|Oct 1985")
+                    // This keeps alphabetical sorting 100% accurate down to the month, while embedding the name text!
+                    string preciseDateString = targetDate.ToString("yyyy-MM") + "|" + targetDate.ToString("MMM yyyy");
 
                     int sizeKb = 32; string chip = "NROM";
                     if (gameName.Equals("Super Mario Bros.", StringComparison.OrdinalIgnoreCase)) { sizeKb = 40; chip = "NROM"; }
@@ -121,7 +122,7 @@ namespace NES_Box_Art.Controllers
                     else if (gameName.Contains("Ghosts 'n Goblins", StringComparison.OrdinalIgnoreCase)) { sizeKb = 128; chip = "CNROM"; }
 
                     return new TimelineGameViewModel {
-                        IgdbData = g, SizeInKb = sizeKb, MapperChip = chip, ReleaseYear = year
+                        IgdbData = g, SizeInKb = sizeKb, MapperChip = chip, ReleaseYear = preciseDateString
                     };
                 })
                 .OrderBy(x => x.ReleaseYear)
@@ -129,11 +130,13 @@ namespace NES_Box_Art.Controllers
 
                 return View(gridData);
             }
+
             catch (Exception ex)
             {
                 ViewBag.Error = $"DATABASE ACCESS EXCEPTION DETECTED: {ex.Message}";
                 return View(new List<TimelineGameViewModel>());
             }
+
         }
     }
 }

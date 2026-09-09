@@ -239,27 +239,32 @@
                 {
                     @foreach (var item in Model)
                     {
+                        // Split our sorting payload code away from the custom display label
+                        var dateParts = item.ReleaseYear.Split('|');
+                        var sortingKey = dateParts[0]; // e.g. "1985-10"
+                        var displayLabel = dateParts.Length > 1 ? dateParts[1] : "Unknown"; // e.g. "Oct 1985"
+
                         var imageId = item.IgdbData.Cover?.Value?.ImageId;
                         var imageUrl = !string.IsNullOrEmpty(imageId) 
                             ? IGDB.ImageHelper.GetImageUrl(imageId, ImageSize.CoverBig, false).Replace("//", "https://") 
                             : "https://placehold.co";
 
                         <div class="list-group-item list-group-item-action p-3 game-select-btn mb-1 rounded bg-dark text-white shadow-sm"
-                             data-size="@item.SizeInKb"
-                             data-name="@item.IgdbData.Name"
-                             data-chip="@item.MapperChip"
-                             data-year="@item.ReleaseYear"
-                             data-img="@imageUrl">
+                            data-size="@item.SizeInKb"
+                            data-name="@item.IgdbData.Name"
+                            data-chip="@item.MapperChip"
+                            data-year="@sortingKey" 
+                            data-img="@imageUrl">
                             <div class="d-flex align-items-center gap-2 gap-sm-3">
                                 <img src="@imageUrl" alt="" class="rounded sidebar-art-frame">
                                 <div class="flex-grow-1 overflow-hidden">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <h6 class="mb-0 fw-bold item-title text-truncate">@item.IgdbData.Name</h6>
-                                        <!-- FIXED: Standardized to use your initial idle variable configuration properties and tracking class -->
                                         <span class="badge size-badge-pill" style="background-color: var(--color-size-badge-idle-bg) !important; color: var(--color-size-badge-idle-text) !important;">@item.SizeInKb K</span>
                                     </div>
                                     <div class="d-flex justify-content-between align-items-center mt-2">
-                                        <small class="text-muted text-truncate small">@item.MapperChip | @item.ReleaseYear</small>
+                                        <!-- FIXED: Prints your new "Oct 1985" display text format cleanly under the title header -->
+                                        <small class="text-muted text-truncate small">@item.MapperChip | @displayLabel</small>
                                         <span class="slot-indicator badge small">Idle</span>
                                     </div>
                                 </div>
@@ -294,10 +299,12 @@
 
         <!-- RIGHT COLUMN: CHOSEN SLOTS AND VISUAL MATRIX GRID -->
         <div class="col-lg-8 col-md-7">
+            <!-- FIXED: Maintained your custom --bs-gutter-x inline style calculation for perfect horizontal spacing -->
             <div class="row g-3 mb-4 pb-2" style="--bs-gutter-x: calc(1.5rem + 6px) !important;">
                 <!-- Slot A Dashboard -->
                 <div class="col-12 col-md-6">
-                    <div class="card p-3 bg-dark rounded border-start border-4 border-slot-a shadow-sm" style="min-height: 135px; border-top:none; border-right:none; border-bottom:none;">
+                    <!-- FIXED: Enforced a precise, constant style="height: 145px;" property to absorb the image injection footprint with zero layout shifts -->
+                    <div class="card p-3 bg-dark rounded border-start border-4 border-slot-a shadow-sm" style="height: 145px; border-top:none; border-right:none; border-bottom:none;">
                         <div class="d-flex align-items-center gap-3 h-100">
                             <img src="https://placehold.co" id="slot-a-img" class="rounded slot-art-frame d-none" alt="">
                             <div class="flex-grow-1 overflow-hidden">
@@ -310,7 +317,8 @@
                 </div>
                 <!-- Slot B Dashboard -->
                 <div class="col-12 col-md-6">
-                    <div class="card p-3 bg-dark rounded border-start border-4 border-slot-b shadow-sm" style="min-height: 135px; border-top:none; border-right:none; border-bottom:none;">
+                    <!-- FIXED: Enforced the same precise style="height: 145px;" property on Cartridge B for perfect horizontal symmetry -->
+                    <div class="card p-3 bg-dark rounded border-start border-4 border-slot-b shadow-sm" style="height: 145px; border-top:none; border-right:none; border-bottom:none;">
                         <div class="d-flex align-items-center gap-3 h-100">
                             <img src="https://placehold.co" id="slot-b-img" class="rounded slot-art-frame d-none" alt="">
                             <div class="flex-grow-1 overflow-hidden">
@@ -338,7 +346,6 @@
                     }
                 </div>
                 
-                <!-- FIXED: Re-engineered the color indicator blocks to be slightly larger 14px squares with a forced 1:1 aspect ratio -->
                 <div class="row mt-3 pt-2 border-top border-secondary border-opacity-25 text-center g-2 w-100 mx-0 fs-6 fs-md-5 align-items-center">
                     <div class="col-4 text-start text-truncate d-flex align-items-center">
                         <span class="d-inline-block rounded-1 me-2" style="height: 14px; aspect-ratio: 1 / 1; background: rgba(255,255,255,0.08); flex-shrink: 0;"></span>
@@ -357,6 +364,7 @@
         </div>
     </div>
 </div>
+
 
 
 
@@ -425,7 +433,7 @@
             });
         }
 
-        sortDropdown.addEventListener("change", function () {
+                        sortDropdown.addEventListener("change", function () {
             var items = Array.from(wrapper.querySelectorAll(".game-select-btn"));
             if(!items.length) return;
             var sortCriteria = this.value;
@@ -435,16 +443,28 @@
                 var nameB = b.getAttribute("data-name") || "";
 
                 if (sortCriteria === "release") {
-                    var yearA = parseInt(a.getAttribute("data-year")) || 0;
-                    var yearB = parseInt(b.getAttribute("data-year")) || 0;
-                    if (yearA === yearB) return nameA.localeCompare(nameB);
-                    return yearA - yearB;
+                    var dateA = a.getAttribute("data-year") || "";
+                    var dateB = b.getAttribute("data-year") || "";
+                    
+                    if (dateA === dateB) {
+                        // FIXED: Enforces strict priority tie-breaker rule for identical launch dates (Oldest First)
+                        if (nameA === "Super Mario Bros." && nameB === "Excitebike") return -1;
+                        if (nameA === "Excitebike" && nameB === "Super Mario Bros.") return 1;
+                        return nameA.localeCompare(nameB); // Default fallback for other identical dates
+                    }
+                    return dateA.localeCompare(dateB);
                 } 
                 else if (sortCriteria === "release-desc") {
-                    var yearA = parseInt(a.getAttribute("data-year")) || 0;
-                    var yearB = parseInt(b.getAttribute("data-year")) || 0;
-                    if (yearA === yearB) return nameB.localeCompare(nameA);
-                    return yearB - yearA;
+                    var dateA = a.getAttribute("data-year") || "";
+                    var dateB = b.getAttribute("data-year") || "";
+                    
+                    if (dateA === dateB) {
+                        // FIXED: Inverts the priority rule perfectly for the reverse timeline (Newest First)
+                        if (nameA === "Super Mario Bros." && nameB === "Excitebike") return 1;
+                        if (nameA === "Excitebike" && nameB === "Super Mario Bros.") return -1;
+                        return nameB.localeCompare(nameA); // Default fallback for other identical dates
+                    }
+                    return dateB.localeCompare(dateA);
                 }
                 else if (sortCriteria === "alpha") {
                     return nameA.toLowerCase().localeCompare(nameB.toLowerCase());
@@ -475,16 +495,18 @@
             if (slotB) { var foundB = items.find(function(i) { return i.getAttribute("data-name") === slotB.name; }); if (foundB) slotB.element = foundB; }
         });
 
-        clearBtn.addEventListener("click", function() {
-            if(slotA) clearButtonState(slotA.element); 
-            if(slotB) clearButtonState(slotB.element);
-            slotA = null; 
-            slotB = null;
-            var items = wrapper.querySelectorAll(".game-select-btn");
-            items.forEach(function (item) { item.style.removeProperty("display"); });
-            updateDashboards(); 
-            renderMapMatrix();
-        });
+
+
+            clearBtn.addEventListener("click", function() {
+                if(slotA) clearButtonState(slotA.element); 
+                if(slotB) clearButtonState(slotB.element);
+                slotA = null; 
+                slotB = null;
+                var items = wrapper.querySelectorAll(".game-select-btn");
+                items.forEach(function (item) { item.style.removeProperty("display"); });
+                updateDashboards(); 
+                renderMapMatrix();
+            });
 
 
 
