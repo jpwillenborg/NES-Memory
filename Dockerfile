@@ -1,5 +1,8 @@
-# Use the official Microsoft .NET SDK image to build the app
-FROM ://microsoft.com AS build-env
+# 1. DEFINE REGISTRY AS AN EXPLICIT ARGUMENT UNTIL THE PARSER CLEARING
+ARG REGISTRY=mcr.microsoft.com
+
+# Use the explicitly initialized registry block variables to clear the parser warning
+FROM ${REGISTRY}/dotnet/sdk:10.0 AS build-env
 WORKDIR /app
 
 # Copy project files and restore dependencies explicitly
@@ -10,8 +13,9 @@ RUN dotnet restore
 COPY . ./
 RUN dotnet publish -c Release -o out
 
-# Build the final runtime image using the lightweight .NET runtime
-FROM ://microsoft.com
+# 2. REDECLARE THE ARGUMENT FOR THE MULTI-STAGE SCOPE CONTINUATION
+ARG REGISTRY=mcr.microsoft.com
+FROM ${REGISTRY}/dotnet/aspnet:10.0
 WORKDIR /app
 COPY --from=build-env /app/out .
 
