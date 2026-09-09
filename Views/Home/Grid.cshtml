@@ -55,7 +55,8 @@
     }
 
     #payload-pool-wrapper {
-        max-height: 886px; 
+        /* FIXED: Increased max-height from 899px to 900px to perfectly seat the bottom edge alignment */
+        max-height: 900px; 
         overflow-y: auto;
         padding-right: 4px; 
     }
@@ -75,6 +76,7 @@
         background: var(--color-theme-a); 
         border-radius: 4px;
     }
+
     /* Enforces the baseline background color across global panel elements */
     .card, .list-group-item.game-select-btn, .bg-body-tertiary {
         background-color: var(--color-panel-bg) !important;
