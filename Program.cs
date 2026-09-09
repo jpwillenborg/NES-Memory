@@ -20,6 +20,18 @@ builder.Services.AddSingleton<IGDBClient>(sp =>
 // Add standard framework MVC page support services
 builder.Services.AddControllersWithViews();
 
+
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowBluehost",
+        policy => policy.WithOrigins("https://jpwillenborg.com", "http://jpwillenborg.com", "http://localhost")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod());
+});
+
+
+
 var app = builder.Build();
 
 // 3. CONFIGURE THE HTTP REQUEST PIPELINE ROUTER MAPPINGS
@@ -32,6 +44,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseStaticFiles();
 app.UseRouting();
+app.UseCors("AllowBluehost");
 app.UseAuthorization();
 
 app.MapControllerRoute(
