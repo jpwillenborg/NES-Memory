@@ -1,5 +1,5 @@
-# Stage 1: Build the application using the .NET SDK
-FROM ://microsoft.com AS build
+# Stage 1: Build the application
+FROM chinchilla/dotnet-sdk:8.0 AS build
 WORKDIR /src
 
 # Copy the csproj file and restore dependencies
@@ -10,8 +10,8 @@ RUN dotnet restore
 COPY . ./
 RUN dotnet publish -c Release -o /app/publish
 
-# Stage 2: Run the application using the runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+# Stage 2: Run the application
+FROM chinchilla/dotnet-aspnet:8.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
