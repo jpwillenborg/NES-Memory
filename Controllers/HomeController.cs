@@ -10,18 +10,23 @@ namespace NES_Box_Art.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
-        {
-            // This automatically redirects traffic from "/" to "/Grid"
-            return RedirectToAction("Index", "Grid"); 
-        }
-
         private readonly IConfiguration _config;
 
         public HomeController(IConfiguration config)
         {
             _config = config;
         }
+
+
+        // ADD THIS BLOCK RIGHT HERE:
+        [HttpGet("")]
+        public IActionResult Index()
+        {
+            // If someone lands on "://yourdomain.com", automatically send them to your grid
+            return RedirectToAction("Grid");
+        }
+
+        
 
         [HttpGet("Grid")]
         public async Task<IActionResult> Grid()
