@@ -1,5 +1,5 @@
 # Stage 1: Build the application using the .NET SDK
-FROM mcr/dotnet-sdk:8.0 AS build
+FROM bitnami/dotnet-sdk:8.0 AS build
 WORKDIR /src
 
 # Copy the csproj file and restore dependencies
@@ -11,7 +11,7 @@ COPY . ./
 RUN dotnet publish -c Release -o /app/publish
 
 # Stage 2: Run the application using the runtime image
-FROM mcr/dotnet-aspnet:8.0 AS final
+FROM bitnami/dotnet:8.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
