@@ -18,18 +18,9 @@ namespace NES_Box_Art.Controllers
         }
 
 
-        // ADD THIS BLOCK RIGHT HERE:
+        // Change the attribute to look for the root domain, and rename the method to Index
         [HttpGet("")]
-        public IActionResult Index()
-        {
-            // If someone lands on "://yourdomain.com", automatically send them to your grid
-            return RedirectToAction("Grid");
-        }
-
-        
-
-        [HttpGet("Grid")]
-        public async Task<IActionResult> Grid()
+        public async Task<IActionResult> Index()
         {
             var gameList = new[] { 
                 "Super Mario Bros.", "Castlevania", "The Legend of Zelda", "Contra", "Metroid",
@@ -200,12 +191,12 @@ namespace NES_Box_Art.Controllers
                 .OrderBy(x => x.ReleaseYear)
                 .ToList();
 
-                return View(gridData);
+                return View("Grid", gridData); // <-- CRUCIAL: Change this line at the bottom of the method!
             }
             catch (Exception ex)
             {
                 ViewBag.Error = $"DATABASE ACCESS EXCEPTION DETECTED: {ex.Message}";
-                return View(new List<TimelineGameViewModel>());
+                return View("Grid", new List<TimelineGameViewModel>()); // <-- CRUCIAL: Change this error line too!
             }
         }
     }
