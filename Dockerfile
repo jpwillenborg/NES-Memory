@@ -1,6 +1,6 @@
 # Stage 1: Build the application using the .NET SDK
-FROM ghcr.io/actions/runner-libsnet8:latest AS build-env
-FROM ghcr.io/dotnet/sdk:8.0 AS build
+FROM ://docker.com AS build-env
+FROM ://docker.com AS build
 WORKDIR /src
 
 # Copy the csproj file and restore dependencies
@@ -12,7 +12,7 @@ COPY . ./
 RUN dotnet publish -c Release -o /app/publish
 
 # Stage 2: Run the application using the runtime image
-FROM ghcr.io/dotnet/aspnet:8.0 AS final
+FROM ://docker.com AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
