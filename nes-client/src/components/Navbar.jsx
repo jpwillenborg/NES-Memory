@@ -19,7 +19,7 @@ export default function Navigation({ isOpen, setIsOpen }) {
     };
     
     const handleResize = () => {
-      if (window.matchMedia('(min-width: 850px)').matches) setIsOpen(false);
+      if (window.matchMedia('(min-width: 1040px)').matches) setIsOpen(false);
     };
 
     document.body.style.overflow = 'hidden';
@@ -38,13 +38,13 @@ export default function Navigation({ isOpen, setIsOpen }) {
       <nav aria-label="Main Navigation" className="fixed top-0 left-0 w-full z-50 py-[1.25rem] bg-[#06090f] transition-colors duration-200 ease-in-out">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between w-full m-0">
-            <div className="w-1/2 min-[850px]:w-1/4 text-left">
+            <div className="w-1/2 min-[1040px]:w-1/4 text-left">
               <a href="https://jpwillenborg.com" className="text-[1.75rem] font-bold text-white no-underline tracking-tight inline-block lowercase font-sans">
                 john<span className="text-portfolio-cyan">.</span>willenborg
               </a>
             </div>
 
-            <div className="hidden min-[850px]:flex min-[850px]:w-1/2 justify-center items-center">
+            <div className="hidden min-[1040px]:flex min-[1040px]:w-1/2 justify-center items-center">
               <div className="flex gap-[2.75rem]">
                 {NAV_LINKS.map((link) => (
                   <a
@@ -58,13 +58,13 @@ export default function Navigation({ isOpen, setIsOpen }) {
               </div>
             </div>
 
-            <div className="w-1/2 min-[850px]:w-1/4 text-right flex justify-end items-center">
-              <a href="https://jpwillenborg.com" className="hidden min-[850px]:block bg-portfolio-cyan text-[#090d16] font-sans font-medium text-[0.85rem] tracking-[0.01em] rounded-[6px] px-[1.25rem] py-[0.45rem] shadow-[0_0_16px_4px_rgba(0,0,0,0.35)] no-underline hover:bg-[#66efff] transition-all duration-200">
+            <div className="w-1/2 min-[1040px]:w-1/4 text-right flex justify-end items-center">
+              <a href="https://jpwillenborg.com" className="hidden min-[1040px]:block bg-portfolio-cyan text-[#090d16] font-sans font-medium text-[0.85rem] tracking-[0.01em] rounded-[6px] px-[1.25rem] py-[0.45rem] shadow-[0_0_16px_4px_rgba(0,0,0,0.35)] no-underline hover:bg-[#66efff] transition-all duration-200">
                 Let's Connect
               </a>
               <button
                 type="button"
-                className="bg-transparent border-0 outline-none p-0 min-[850px]:hidden text-[1.75rem] no-underline cursor-pointer rounded-[4px]"
+                className="bg-transparent border-0 outline-none p-0 min-[1040px]:hidden text-[1.75rem] no-underline cursor-pointer rounded-[4px]"
                 onClick={() => setIsOpen((prev) => !prev)}
                 aria-expanded={isOpen}
                 aria-controls="nes-mobile-nav"
@@ -80,7 +80,7 @@ export default function Navigation({ isOpen, setIsOpen }) {
       </nav>
 
       {isOpen && (
-        <div id="nes-mobile-nav" aria-label="Mobile navigation" className="fixed top-0 left-0 h-screen w-screen z-40 flex flex-col justify-center items-center min-[850px]:hidden gap-6 bg-[#090d16]">
+        <div id="nes-mobile-nav" aria-label="Mobile navigation" className="fixed top-0 left-0 h-screen w-screen z-40 flex flex-col justify-center items-center min-[1040px]:hidden gap-6 bg-[#090d16]">
           {NAV_LINKS.map((link) => (
             <a
               key={link.label}

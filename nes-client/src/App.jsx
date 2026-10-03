@@ -69,12 +69,12 @@ export default function App() {
   const memoryDifference = firstGame && secondGame ? Math.abs(firstGame.sizeInKb - secondGame.sizeInKb) : 0;
 
   return (
-    <div className="app-shell flex flex-col min-h-screen w-full max-w-full overflow-x-hidden box-border justify-between">
+    <div className="app-shell flex flex-col min-h-screen w-full max-w-full overflow-x-hidden box-border bg-[#090d16]">
       <Navigation isOpen={isMobileMenuOpen} setIsOpen={setIsMobileMenuOpen} />
 
-      <div className="w-full box-border relative z-10 px-8 md:px-14 lg:px-6 pt-[125px] md:pt-[160px] pb-[60px] md:pb-16 lg:pb-[120px] max-w-full overflow-x-hidden flex-grow flex flex-col justify-center">
+      <div className="w-full box-border relative z-10 px-4 md:px-6 lg:px-6 pt-[125px] md:pt-[140px] lg:pt-[160px] pb-12 md:pb-6 lg:pb-[120px] max-w-full overflow-x-hidden flex-grow flex flex-col justify-center">
         <main role="main" className="max-w-[1024px] mx-auto w-full box-border">
-          <div id="nes-matrix-wrapper" className="w-full relative pb-16">
+          <div id="nes-matrix-wrapper" className="w-full relative">
             <HeroSection />
 
             {!isLoading && error && (
@@ -86,7 +86,7 @@ export default function App() {
             {isLoading && <LoadingCard />}
 
             {!isLoading && !error && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch mt-12 md:mt-10">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-4 lg:gap-10 items-stretch mt-12 md:mt-6 lg:mt-10">
                 <div className="order-1 md:order-none col-span-1">
                   <GameSelector 
                     sortedGames={sortedGames}
