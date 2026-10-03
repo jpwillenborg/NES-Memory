@@ -86,7 +86,7 @@ export default function App() {
             {isLoading && <LoadingCard />}
 
             {!isLoading && !error && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-[24px] items-stretch mt-12 md:mt-6 lg:mt-[24px]">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-[24px] items-stretch mt-12 md:mt-6 lg:mt-[24px] max-[767px]:mt-2">
                 <div className="order-1 md:order-none col-span-1">
                   <GameSelector 
                     sortedGames={sortedGames}
