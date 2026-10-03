@@ -80,18 +80,22 @@ export default function Navigation({ isOpen, setIsOpen }) {
       </nav>
 
       {isOpen && (
-        <div id="nes-mobile-nav" aria-label="Mobile navigation" className="fixed top-0 left-0 h-screen w-screen z-40 flex flex-col justify-center items-center min-[1040px]:hidden gap-6 bg-[#090d16]">
+        <div id="nes-mobile-nav" aria-label="Mobile navigation" className="fixed inset-0 w-full h-full z-40 flex flex-col justify-center items-center min-[1040px]:hidden gap-8 bg-[#090d16]">
           {NAV_LINKS.map((link) => (
             <a
               key={link.label}
               href={link.href}
               onClick={() => setIsOpen(false)}
-              className="no-underline text-white font-mono font-bold text-[1.25rem]"
+              className="no-underline text-white font-mono font-bold text-[1.35rem] md:text-[1.65rem] tracking-wide hover:text-portfolio-cyan transition-colors"
             >
               {link.label}
             </a>
           ))}
-          <a href="https://jpwillenborg.com" onClick={() => setIsOpen(false)} className="no-underline text-portfolio-cyan font-mono font-bold text-[1.25rem]">
+          <a 
+            href="https://jpwillenborg.com" 
+            onClick={() => setIsOpen(false)} 
+            className="no-underline text-portfolio-cyan font-mono font-bold text-[1.35rem] md:text-[1.65rem] tracking-wide hover:text-[#66efff] transition-colors"
+          >
             Let's Connect
           </a>
         </div>
