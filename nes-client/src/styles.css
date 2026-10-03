@@ -41,8 +41,16 @@ body {
 }
 
 @media (min-width: 768px) and (max-width: 1023px) {
-  body, .app-shell {
+  body {
+    overflow-y: auto !important;
+  }
+
+  .app-shell {
     zoom: 0.88;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    min-height: 114vh !important;
   }
 
   #allocation-matrix-grid {
@@ -56,8 +64,16 @@ body {
 }
 
 @media (min-width: 1024px) and (max-width: 1279px) {
-  body, .app-shell {
+  body {
+    overflow-y: auto !important;
+  }
+
+  .app-shell {
     zoom: 0.92;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    min-height: 109vh !important;
   }
 
   #allocation-matrix-grid {
