@@ -11,10 +11,10 @@ export default function HeroSection() {
         </h1>
         
         <div className="text-[#a0aec0] text-[1.05rem] leading-[1.65] mt-10 mb-16 block w-full max-w-full">
-          <p className="m-0 opacity-90 break-words">
+          <p className="m-0 break-words">
             A React/Vite visualizer hosted on Apache, backed by a controller-based ASP.NET Core Web API on Render. The API retrieves and caches IGDB release data and pairs it with curated NES cartridge-capacity and mapper estimates for side-by-side comparison.
           </p>
-          <p className="m-0 pt-4 opacity-90 break-words">
+          <p className="m-0 pt-4 break-words">
             Select two games from the list to see how <span className="text-portfolio-cyan font-semibold">CARTRIDGE A</span> and <span className="text-portfolio-purple font-semibold">CARTRIDGE B</span> compare in terms of memory footprint.
           </p>
         </div>
