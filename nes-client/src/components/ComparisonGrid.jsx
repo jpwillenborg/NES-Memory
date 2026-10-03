@@ -10,7 +10,7 @@ export default function ComparisonGrid({ firstGame, secondGame, difference }) {
         <SelectionSlot label="Cartridge B" game={secondGame} tone="purple" />
       </div>
 
-      <div id="grid-parent-card" className="bg-[#111823] p-4 lg:p-6 rounded-[16px] shadow-[0_4px_20px_rgba(0,0,0,0.25)] border border-[#1a2333]/50 flex flex-col gap-[24px] flex-grow justify-between max-w-full overflow-hidden">
+      <div id="grid-parent-card" className="bg-[#111823] p-4 lg:p-6 rounded-[16px] shadow-[0_4px_20px_rgba(0,0,0,0.25)] flex flex-col gap-[24px] flex-grow justify-between max-w-full overflow-hidden">
         <div className="flex justify-between items-center border-b border-[#1a2333] pb-3 lg:pb-4 flex-shrink-0 gap-2 whitespace-nowrap">
           <h3 className="m-0 text-[0.825rem] lg:text-[1.25rem] font-bold text-white tracking-normal lg:tracking-tight">Visual Size Comparison (In KB)</h3>
           <div className="text-right font-mono font-bold text-[#a0aec0] text-[0.75rem] lg:text-[1.1rem] flex-shrink-0">
@@ -21,7 +21,7 @@ export default function ComparisonGrid({ firstGame, secondGame, difference }) {
         <div className="bg-[#090d16] rounded-[12px] p-3 lg:p-6 flex flex-col gap-4 box-border flex-grow justify-between overflow-x-hidden">
           <div 
             id="allocation-matrix-grid" 
-            className="w-full justify-center p-0.5" 
+            className="w-full justify-center p-0.5 max-[767px]:-mb-6 min-[1024px]:max-[1279px]:mb-5 xl:mb-3" 
             role="img" 
             aria-label={getMatrixDescription(firstGame, secondGame)}
           >
