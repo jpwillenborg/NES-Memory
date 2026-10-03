@@ -4,21 +4,21 @@ const PURPLE_HEX = 'var(--color-portfolio-purple)';
 
 export default function ComparisonGrid({ firstGame, secondGame, difference }) {
   return (
-    <div className="flex flex-col gap-6 md:gap-8 h-full justify-between mt-6 md:mt-0">
-      <div className="grid grid-cols-2 gap-2 md:gap-4 flex-shrink-0">
+    <div className="flex flex-col gap-[24px] h-full justify-between mt-6 md:mt-0">
+      <div className="grid grid-cols-2 gap-[24px] flex-shrink-0">
         <SelectionSlot label="Cartridge A" game={firstGame} tone="cyan" />
         <SelectionSlot label="Cartridge B" game={secondGame} tone="purple" />
       </div>
 
-      <div id="grid-parent-card" className="bg-[#111823] p-4 md:p-6 rounded-[16px] shadow-[0_4px_20px_rgba(0,0,0,0.25)] border border-[#1a2333]/50 flex flex-col gap-4 flex-grow justify-between max-w-full overflow-hidden">
-        <div className="flex justify-between items-center border-b border-[#1a2333] pb-3 md:pb-4 flex-shrink-0 gap-2 whitespace-nowrap">
-          <h3 className="m-0 text-[0.825rem] md:text-[1.25rem] font-bold text-white tracking-normal md:tracking-tight">Visual Size Comparison (In KB)</h3>
-          <div className="text-right font-mono font-bold text-[#a0aec0] text-[0.75rem] md:text-[1.1rem] flex-shrink-0">
+      <div id="grid-parent-card" className="bg-[#111823] p-4 lg:p-6 rounded-[16px] shadow-[0_4px_20px_rgba(0,0,0,0.25)] border border-[#1a2333]/50 flex flex-col gap-[24px] flex-grow justify-between max-w-full overflow-hidden">
+        <div className="flex justify-between items-center border-b border-[#1a2333] pb-3 lg:pb-4 flex-shrink-0 gap-2 whitespace-nowrap">
+          <h3 className="m-0 text-[0.825rem] lg:text-[1.25rem] font-bold text-white tracking-normal lg:tracking-tight">Visual Size Comparison (In KB)</h3>
+          <div className="text-right font-mono font-bold text-[#a0aec0] text-[0.75rem] lg:text-[1.1rem] flex-shrink-0">
             Difference: <span className="text-white font-extrabold">{difference} KB</span>
           </div>
         </div>
 
-        <div className="bg-[#090d16] rounded-[12px] p-3 md:p-6 flex flex-col gap-4 box-border flex-grow justify-between overflow-x-hidden">
+        <div className="bg-[#090d16] rounded-[12px] p-3 lg:p-6 flex flex-col gap-4 box-border flex-grow justify-between overflow-x-hidden">
           <div 
             id="allocation-matrix-grid" 
             className="w-full justify-center p-0.5" 
@@ -54,7 +54,7 @@ export default function ComparisonGrid({ firstGame, secondGame, difference }) {
             })}
           </div>
 
-          <div className="flex items-center justify-start gap-x-4 gap-y-2 border-t border-[#1a2333] -mt-6 md:mt-2 pt-3 font-mono text-[10px] md:text-sm text-[#a0aec0] flex-wrap flex-shrink-0">
+          <div className="flex items-center justify-start gap-x-4 gap-y-2 border-t border-[#1a2333] pt-3 font-mono text-[10px] md:text-sm text-[#a0aec0] flex-wrap flex-shrink-0">
             <LegendItem color="#111823" label="Empty Bank" />
             <LegendItem color={CYAN_HEX} label="Cart A Only" />
             <LegendItem color={PURPLE_HEX} label="Cart B Only" />
