@@ -72,7 +72,7 @@ export default function App() {
     <div className="app-shell flex flex-col min-h-screen w-full max-w-full overflow-x-hidden box-border bg-[#090d16]">
       <Navigation isOpen={isMobileMenuOpen} setIsOpen={setIsMobileMenuOpen} />
 
-      <div className="w-full box-border relative z-10 px-6 sm:px-8 md:px-[40px] lg:px-6 pt-[125px] md:pt-[140px] lg:pt-[160px] pb-12 max-[849px]:pb-[80px] md:pb-16 lg:pb-[140px] max-w-full overflow-x-hidden flex-grow flex flex-col justify-center">
+      <div className="w-full box-border relative z-10 px-6 sm:px-8 md:px-[40px] lg:px-6 pt-[125px] md:pt-[140px] lg:pt-[160px] pb-16 md:pb-[80px] lg:pb-[140px] max-w-full overflow-x-hidden flex-grow flex flex-col justify-center">
         <main role="main" className="max-w-[1024px] mx-auto w-full box-border">
           <div id="nes-matrix-wrapper" className="w-full relative">
             <HeroSection />

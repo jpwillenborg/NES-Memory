@@ -17,28 +17,40 @@ body {
 #allocation-matrix-grid {
   display: grid;
   grid-template-columns: repeat(24, minmax(0, 1fr));
-  gap: 2px;
+  width: 100%;
 }
 
 .memory-block-node {
   width: 100%;
+  aspect-ratio: 1 / 1;
 }
 
 .memory-block-node.is-overlapping {
   background-color: #39ff14 !important;
 }
 
+@media (max-width: 767px) {
+  #allocation-matrix-grid {
+    gap: 2px;
+  }
+  
+  .memory-block-node {
+    width: 80%;
+    margin: 0 auto;
+  }
+}
+
 @media (min-width: 768px) and (max-width: 1023px) {
   body, .app-shell {
-    zoom: 0.84;
+    zoom: 0.88;
   }
 
   #allocation-matrix-grid {
     gap: 4px;
   }
-  
+
   .memory-block-node {
-    max-width: 16px;
+    width: 83%;
     margin: 0 auto;
   }
 }
@@ -46,6 +58,15 @@ body {
 @media (min-width: 1024px) and (max-width: 1279px) {
   body, .app-shell {
     zoom: 0.92;
+  }
+
+  #allocation-matrix-grid {
+    gap: 4px;
+  }
+
+  .memory-block-node {
+    width: 82%;
+    margin: 0 auto;
   }
 }
 
